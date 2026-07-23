@@ -12,7 +12,7 @@ from tkinter import ttk, messagebox
 import requests
 
 # ====== 配置 ======
-API_BASE = "https://zalomanga.com/api"
+API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
 LOCAL_TRANSLATOR = "http://localhost:8001"
 POLL_INTERVAL = 5  # 轮询间隔（秒）
 
