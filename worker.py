@@ -51,6 +51,23 @@ def do_login(username, password):
         return False, str(e)
 
 
+def _build_render_metadata(ocr_metadata_str, translated_str):
+    """构建 render-direct 需要的 blocks + 译文"""
+    try:
+        blocks = json.loads(ocr_metadata_str)
+        trans_list = json.loads(translated_str)
+        if isinstance(trans_list, str):
+            trans_list = [trans_list]
+    except Exception:
+        return {"image_0": {"blocks": []}}
+    for j, b in enumerate(blocks):
+        if j < len(trans_list):
+            t = trans_list[j]
+            txt = t if isinstance(t, str) else (t.get("text", "") if isinstance(t, dict) else "")
+            b["text"] = txt
+    return {"image_0": {"blocks": blocks}}
+
+
 def process_ocr_task(task):
     """下载图片 → 本地 OCR → 返回结果"""
     img_url = f"{API_BASE}/downloads/{task['localPath']}"
@@ -105,12 +122,15 @@ def process_retouch_task(task):
 
     filename = os.path.basename(task["localPath"])
     files = [("images", (filename, r.content, "image/png"))]
-    corrected_data = {"image_0": {"blocks": []}}
+    # 用云端的 OCR blocks 坐标 + 译文
+    ocr_meta = task.get("ocrMetadata") or "[]"
+    translated = task.get("correctedTranslatedText") or task.get("translatedText") or "[]"
+    metadata_dict = _build_render_metadata(ocr_meta, translated)
     config = '{"render": {"font_scale_factor": 0.65}}'
     try:
         r = requests.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
                           files=files,
-                          data={"config": config, "ocr_metadata": json.dumps(corrected_data)},
+                          data={"config": config, "ocr_metadata": json.dumps(metadata_dict)},
                           timeout=300)
         if r.status_code != 200:
             return {"imageId": task["imageId"], "outputImage": "",
