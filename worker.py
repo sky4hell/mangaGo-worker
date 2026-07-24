@@ -267,29 +267,54 @@ class WorkerApp:
         self.root.after(0, lambda: self.login_status.config(text="请登录"))
 
     def _start_web_login(self):
-        import http.server
+        import socket, hashlib, base64, struct
         self.login_status.config(text="等待浏览器认证...", foreground="blue")
         self.login_btn.config(state="disabled")
-        # 启动本地回调服务
         parent = self
-        class CallbackHandler(http.server.BaseHTTPRequestHandler):
-            def do_GET(self):
-                global _token, _user_info
-                tk = self.path.lstrip('/?token=')
-                _token = tk
-                parent.root.after(0, parent._setup_main)
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.end_headers()
-                self.wfile.write('<html><body><h2>✅ 登录成功</h2><p>可关闭此页面</p></body></html>'.encode())
-                # 保存 token
-                try:
-                    with open('token.txt', 'w') as f:
-                        f.write(tk)
-                except Exception:
-                    pass
-        svr = http.server.HTTPServer(('localhost', 9527), CallbackHandler)
-        threading.Thread(target=lambda: (svr.handle_request(), svr.server_close()), daemon=True).start()
+
+        def ws_server():
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind(('127.0.0.1', 9527))
+            sock.listen(1)
+            sock.settimeout(120)
+            try:
+                conn, _ = sock.accept()
+                data = conn.recv(4096).decode()
+                # WebSocket 握手
+                key = ''
+                for line in data.split('\r\n'):
+                    if line.lower().startswith('sec-websocket-key:'):
+                        key = line.split(':', 1)[1].strip()
+                if key:
+                    accept = base64.b64encode(
+                        hashlib.sha1((key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').encode()).digest()
+                    ).decode()
+                    conn.send(f'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {accept}\r\n\r\n'.encode())
+                    # 读第一帧
+                    frame = conn.recv(4096)
+                    if len(frame) >= 6:
+                        mask = frame[2:6]
+                        payload_len = frame[1] & 0x7f
+                        if payload_len == 126:
+                            payload = frame[8:8+struct.unpack('>H', frame[6:8])[0]]
+                        else:
+                            payload = frame[6:6+payload_len]
+                        tk = bytes(b ^ mask[i % 4] for i, b in enumerate(payload)).decode()
+                        global _token, _user_info
+                        _token = tk
+                        parent.root.after(0, parent._setup_main)
+                        try:
+                            with open('token.txt', 'w') as f:
+                                f.write(tk)
+                        except Exception:
+                            pass
+                conn.close()
+            except socket.timeout:
+                pass
+            sock.close()
+
+        threading.Thread(target=ws_server, daemon=True).start()
         import webbrowser
         webbrowser.open(f"{API_BASE.replace('/api', '')}/admin?worker_callback=9527")
 
