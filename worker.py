@@ -320,10 +320,9 @@ class WorkerApp:
         import subprocess
         venv_py = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                'manga-image-translator', 'venv', 'Scripts', 'python.exe')
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         p = subprocess.Popen([venv_py, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si)
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             creationflags=subprocess.CREATE_NO_WINDOW)
         _log(f'start_translator: pid={p.pid}')
 
     def _update_translator_status(self, text, color="blue"):
