@@ -68,15 +68,30 @@ def _build_render_metadata(ocr_metadata_str, translated_str):
     return {"image_0": {"blocks": blocks}}
 
 
+# 本地图片目录（上传时同步存到这里，OCR/修图优先本地读）
+_LOCAL_DOWNLOADS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                'manga-image-translator', 'downloads')
+
+
+def _get_image_bytes(local_path):
+    """优先本地文件，没有则云端下载"""
+    if _LOCAL_DOWNLOADS and local_path:
+        fp = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
+        if os.path.exists(fp):
+            with open(fp, 'rb') as f:
+                return f.read()
+    r = requests.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
+    r.raise_for_status()
+    return r.content
+
+
 def process_ocr_task(task):
-    """下载图片 → 本地 OCR → 返回结果"""
-    img_url = f"{API_BASE}/downloads/{task['localPath']}"
+    """本地图片优先 → OCR → 返回结果"""
     try:
-        r = requests.get(img_url, timeout=120)
-        r.raise_for_status()
+        img_bytes = _get_image_bytes(task['localPath'])
     except Exception as e:
         return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
-                "error": f"下载失败: {e}"}
+                "error": f"获取图片失败: {e}"}
 
     filename = os.path.basename(task["localPath"])
     files = [("images", (filename, r.content, "image/png"))]
@@ -113,15 +128,13 @@ def process_ocr_task(task):
 
 def process_retouch_task(task):
     """下载图片 → 本地修图 → 返回 base64"""
-    img_url = f"{API_BASE}/downloads/{task['localPath']}"
     try:
-        r = requests.get(img_url, timeout=120)
-        r.raise_for_status()
+        img_bytes = _get_image_bytes(task['localPath'])
     except Exception as e:
-        return {"imageId": task["imageId"], "outputImage": "", "error": f"下载失败: {e}"}
+        return {"imageId": task["imageId"], "outputImage": "", "error": f"获取图片失败: {e}"}
 
     filename = os.path.basename(task["localPath"])
-    files = [("images", (filename, r.content, "image/png"))]
+    files = [("images", (filename, img_bytes, "image/png"))]
     # 用云端的 OCR blocks 坐标 + 译文
     ocr_meta = task.get("ocrMetadata") or "[]"
     translated = task.get("correctedTranslatedText") or task.get("translatedText") or "[]"
