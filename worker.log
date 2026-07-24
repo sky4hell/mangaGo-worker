@@ -719,3 +719,16 @@
 2026-07-24 17:02:28,613 [INFO] poll_token: HTTP Error 403: Forbidden
 2026-07-24 17:02:31,456 [INFO] poll_token: HTTP Error 403: Forbidden
 2026-07-24 17:02:34,237 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:37,206 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:40,280 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:43,213 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:46,033 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:49,290 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:52,000 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:55,335 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:02:58,318 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:03:01,207 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:03:04,980 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:03:08,290 [INFO] poll_token: HTTP Error 403: Forbidden
+2026-07-24 17:03:32,576 [INFO] worker_id: 8ddc2c46
+2026-07-24 17:03:35,737 [INFO] poll_token: 'WorkerApp' object has no attribute '_setup_main'

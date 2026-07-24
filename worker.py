@@ -300,6 +300,60 @@ class WorkerApp:
             parent.root.after(0, lambda: parent.login_btn.config(state="normal"))
         threading.Thread(target=poll_token, daemon=True).start()
 
+    def _setup_main(self):
+        for w in self.root.winfo_children():
+            w.destroy()
+        self.root.title("mangaGo Worker — 已连接")
+        self.root.geometry("420x350")
+        ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=10)
+        self.status_label = ttk.Label(self.root, text="就绪", font=("", 11))
+        self.status_label.pack()
+        frame = ttk.Frame(self.root)
+        frame.pack(pady=15)
+        ttk.Label(frame, text="OCR 处理: 0", font=("", 10)).grid(row=0, column=0, padx=10)
+        ttk.Label(frame, text="修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
+        ttk.Label(frame, text="错误: 0", foreground="red").grid(row=0, column=2, padx=10)
+        self.stats_frame = frame
+        self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
+        self.translator_status.pack(pady=5)
+        ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
+        threading.Thread(target=self._auto_start, daemon=True).start()
+
+    def _start_translator(self):
+        import subprocess
+        venv_pyw = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                'manga-image-translator', 'venv', 'Scripts', 'pythonw.exe')
+        env = os.environ.copy()
+        env['PYTHONW_SUPPRESS_STDERR'] = '1'
+        p = subprocess.Popen([venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+
+    def _update_translator_status(self, text, color="blue"):
+        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
+
+    def _auto_start(self):
+        _log('auto_start: begin')
+        self._update_translator_status("翻译服务启动中...")
+        self._start_translator()
+        import time
+        for i in range(30):
+            time.sleep(2)
+            try:
+                import urllib.request
+                urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
+                _log(f'auto_start: translator ready at {i*2}s')
+                self._update_translator_status("翻译服务已就绪", "green")
+                break
+            except Exception as e:
+                _log(f'auto_start: wait {i*2}s err={e}')
+                self._update_translator_status(f"等待翻译服务 ({i*2}s)...", "orange")
+        global _running
+        _running = True
+        _log('auto_start: done, starting worker_loop')
+        self.update_status("空闲中")
+        threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
+        threading.Thread(target=self._stats_updater, daemon=True).start()
+
     def update_status(self, msg):
         self.root.after(0, lambda: self.status_label.config(text=msg))
 
