@@ -318,11 +318,12 @@ class WorkerApp:
     def _start_translator(self):
         """后台启动翻译服务"""
         import subprocess
-        venv_py = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                               'manga-image-translator', 'venv', 'Scripts', 'python.exe')
-        p = subprocess.Popen([venv_py, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                             creationflags=subprocess.CREATE_NO_WINDOW)
+        venv_pyw = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                'manga-image-translator', 'venv', 'Scripts', 'pythonw.exe')
+        env = os.environ.copy()
+        env['PYTHONW_SUPPRESS_STDERR'] = '1'
+        p = subprocess.Popen([venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
         _log(f'start_translator: pid={p.pid}')
 
     def _update_translator_status(self, text, color="blue"):
