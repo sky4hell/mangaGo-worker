@@ -11,6 +11,17 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import requests
 
+# ====== 日志 ======
+import logging
+logging.basicConfig(
+    filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worker.log'),
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+def _log(msg):
+    logging.info(msg)
+    print(msg)
+
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
 LOCAL_TRANSLATOR = "http://localhost:8001"
@@ -310,10 +321,12 @@ class WorkerApp:
                                'manga-image-translator', 'venv', 'Scripts', 'python.exe')
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        subprocess.Popen([venv_py, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si)
+        p = subprocess.Popen([venv_py, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si)
+        _log(f'start_translator: pid={p.pid}')
 
     def _auto_start(self):
+        _log('auto_start: begin')
         self.update_status("启动翻译服务中...")
         self._start_translator()
         import time
@@ -322,11 +335,14 @@ class WorkerApp:
             try:
                 import urllib.request
                 urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
+                _log(f'auto_start: translator ready at {i*2}s')
                 break
-            except Exception:
+            except Exception as e:
+                _log(f'auto_start: wait {i*2}s err={e}')
                 self.update_status(f"等待翻译服务就绪 ({i*2}s)...")
         global _running
         _running = True
+        _log('auto_start: done, starting worker_loop')
         self.update_status("空闲中")
         threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
         threading.Thread(target=self._stats_updater, daemon=True).start()
