@@ -283,6 +283,7 @@ class WorkerApp:
                 conn, _ = sock.accept()
                 _log('ws: client connected')
                 data = conn.recv(4096).decode()
+                _log(f'ws: recv {len(data)} bytes, first_line={data[:80]}')
                 # WebSocket 握手
                 key = ''
                 for line in data.split('\r\n'):
