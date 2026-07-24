@@ -38,3 +38,4 @@
 2026-07-24 16:12:39,036 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
 2026-07-24 16:12:39,039 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
 2026-07-24 16:12:40,109 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 16:12:45,113 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
