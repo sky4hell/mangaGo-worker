@@ -44,6 +44,7 @@ def api_post(path, data=None):
 
 def api_get(path, params=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
+    _log(f'api_get {path} token_len={len(_token) if _token else 0}')
     r = requests.get(f"{API_BASE}{path}", params=params, headers=headers, timeout=30)
     return r.json()
 
@@ -278,6 +279,7 @@ class WorkerApp:
         webbrowser.open(f"{API_BASE.replace('/api', '')}/admin?connect={worker_id}")
         parent = self
         def poll_token():
+            global _token
             for i in range(120):
                 time.sleep(2)
                 try:
@@ -287,6 +289,7 @@ class WorkerApp:
                     data = json.loads(r.read())
                     tk = (data.get('data') or {}).get('token')
                     if tk:
+                        _log(f'poll_token: got token len={len(tk)}')
                         _token = tk
                         try:
                             with open('token.txt', 'w') as f:
