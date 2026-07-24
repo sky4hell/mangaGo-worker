@@ -181,6 +181,7 @@ def worker_loop(status_callback):
             # 轮询 OCR 任务
             data = api_get("/worker/poll", {"type": "ocr"})
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
+            _log(f'poll ocr: code={data.get("code")} task={bool(task)} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
