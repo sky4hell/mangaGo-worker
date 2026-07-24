@@ -298,11 +298,10 @@ class WorkerApp:
         ttk.Label(frame, text=f"错误: 0", foreground="red").grid(row=0, column=2, padx=10)
         self.stats_frame = frame
 
-        self.start_btn = ttk.Button(self.root, text="启动处理", command=self._toggle)
-        self.start_btn.pack(pady=15)
-
-        ttk.Label(self.root, text="点击启动：自动拉起翻译服务 + 开始处理任务", font=("", 8), foreground="gray").pack()
+        ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue").pack(pady=5)
         ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
+        # 自动启动翻译服务 + 开始处理
+        threading.Thread(target=self._auto_start, daemon=True).start()
 
     def _start_translator(self):
         """后台启动翻译服务"""
@@ -312,23 +311,23 @@ class WorkerApp:
         subprocess.Popen([venv_python, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    def _toggle(self):
+    def _auto_start(self):
+        self.update_status("启动翻译服务中...")
+        self._start_translator()
+        import time
+        for i in range(30):
+            time.sleep(2)
+            try:
+                import urllib.request
+                urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
+                break
+            except Exception:
+                self.update_status(f"等待翻译服务就绪 ({i*2}s)...")
         global _running
-        if _running:
-            _running = False
-            self.start_btn.config(text="启动处理")
-            self.status_label.config(text="已停止")
-        else:
-            # 启动翻译服务
-            self.status_label.config(text="启动翻译服务中...")
-            self._start_translator()
-            import time
-            time.sleep(8)  # 等模型加载
-            _running = True
-            self.start_btn.config(text="停止")
-            self.status_label.config(text="空闲中")
-            threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
-            threading.Thread(target=self._stats_updater, daemon=True).start()
+        _running = True
+        self.update_status("空闲中")
+        threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
+        threading.Thread(target=self._stats_updater, daemon=True).start()
 
     def update_status(self, msg):
         self.root.after(0, lambda: self.status_label.config(text=msg))
