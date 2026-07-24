@@ -224,31 +224,60 @@ class WorkerApp:
     def _setup_login(self):
         for w in self.root.winfo_children():
             w.destroy()
-        ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=15)
-        ttk.Label(self.root, text="请登录以开始处理任务").pack()
-        ttk.Label(self.root, text="账号").pack(pady=(15, 0))
-        self.user_entry = ttk.Entry(self.root, width=30)
-        self.user_entry.pack()
-        ttk.Label(self.root, text="密码").pack(pady=(10, 0))
-        self.pass_entry = ttk.Entry(self.root, width=30, show="*")
-        self.pass_entry.pack()
-        self.pass_entry.bind("<Return>", lambda e: self._do_login())
-        ttk.Button(self.root, text="登录", command=self._do_login).pack(pady=15)
-        self.login_status = ttk.Label(self.root, text="", foreground="red")
-        self.login_status.pack()
+        self.root.geometry("420x200")
+        ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=20)
+        self.login_status = ttk.Label(self.root, text="", foreground="gray")
+        self.login_status.pack(pady=5)
+        self.login_btn = ttk.Button(self.root, text="网页登录", command=self._start_web_login)
+        self.login_btn.pack(pady=15)
+        ttk.Label(self.root, text="点击登录后在浏览器中完成认证", font=("", 9), foreground="gray").pack()
+        # 读本地缓存 token
+        threading.Thread(target=self._try_cached_token, daemon=True).start()
 
-    def _do_login(self):
-        u = self.user_entry.get().strip()
-        p = self.pass_entry.get().strip()
-        if not u or not p:
-            self.login_status.config(text="请输入账号和密码")
-            return
-        self.login_status.config(text="登录中...", foreground="gray")
-        ok, msg = do_login(u, p)
-        if ok:
-            self._setup_main()
-        else:
-            self.login_status.config(text=msg, foreground="red")
+    def _try_cached_token(self):
+        global _token, _user_info
+        try:
+            with open('token.txt', 'r') as f:
+                tk = f.read().strip()
+            if tk:
+                import urllib.request
+                req = urllib.request.Request(f"{API_BASE}/worker/poll?type=ocr",
+                    headers={"Authorization": f"Bearer {tk}"})
+                r = urllib.request.urlopen(req, timeout=10)
+                if r.status != 401:
+                    _token = tk
+                    self.root.after(0, self._setup_main)
+                    return
+        except Exception:
+            pass
+        self.root.after(0, lambda: self.login_status.config(text="请登录"))
+
+    def _start_web_login(self):
+        import http.server
+        self.login_status.config(text="等待浏览器认证...", foreground="blue")
+        self.login_btn.config(state="disabled")
+        # 启动本地回调服务
+        parent = self
+        class CallbackHandler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                global _token, _user_info
+                tk = self.path.lstrip('/?token=')
+                _token = tk
+                parent.root.after(0, parent._setup_main)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
+                self.wfile.write('<html><body><h2>✅ 登录成功</h2><p>可关闭此页面</p></body></html>'.encode())
+                # 保存 token
+                try:
+                    with open('token.txt', 'w') as f:
+                        f.write(tk)
+                except Exception:
+                    pass
+        svr = http.server.HTTPServer(('localhost', 9527), CallbackHandler)
+        threading.Thread(target=lambda: (svr.handle_request(), svr.server_close()), daemon=True).start()
+        import webbrowser
+        webbrowser.open(f"{API_BASE.replace('/api', '')}/admin?worker_callback=9527")
 
     def _setup_main(self):
         for w in self.root.winfo_children():
