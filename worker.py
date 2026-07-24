@@ -38,12 +38,12 @@ def api_get(path, params=None):
 def do_login(username, password):
     global _token, _user_info
     try:
-        r = requests.post(f"{API_BASE}/user/login", json={
-            "userAccount": username, "userPassword": password
+        r = requests.post(f"{API_BASE}/sysUser/login", json={
+            "adminAccount": username, "password": password
         }, timeout=15)
         data = r.json()
         if data.get("code") == 200:
-            _token = data.get("data", {}).get("token")
+            _token = data.get("data", {}).get("tokens", {}).get("long_token", {}).get("token")
             _user_info = data.get("data", {})
             return True, ""
         return False, data.get("message", "登录失败")
