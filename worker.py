@@ -208,6 +208,7 @@ def worker_loop(status_callback):
                     except Exception as e:
                         _stats["errors"] += 1
                         _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                        _log(f'OCR ERROR img#{img.get("imageId")}: {e}')
                         try:
                             api_post("/worker/submit", {"taskId": task["taskId"], "type": "ocr",
                                 "imageId": img["imageId"], "ocrText": "", "ocrMetadata": ""})
@@ -239,6 +240,7 @@ def worker_loop(status_callback):
                     except Exception as e:
                         _stats["errors"] += 1
                         _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                        _log(f'RETOUCH ERROR img#{img.get("imageId")}: {e}')
                         try:
                             api_post("/worker/submit", {"taskId": task["taskId"], "type": "retouch",
                                 "imageId": img["imageId"], "outputImage": ""})
