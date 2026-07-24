@@ -14,6 +14,8 @@ import requests
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
 LOCAL_TRANSLATOR = "http://localhost:8001"
+TRANSLATOR_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'manga-image-translator', 'server', 'main.py')
 POLL_INTERVAL = 5  # 轮询间隔（秒）
 
 # ====== 全局状态 ======
@@ -282,8 +284,8 @@ class WorkerApp:
     def _setup_main(self):
         for w in self.root.winfo_children():
             w.destroy()
-        self.root.title(f"mangaGo Worker — {_user_info.get('userName', '')}")
-        self.root.geometry("420x320")
+        self.root.title(f"mangaGo Worker — 已连接")
+        self.root.geometry("420x350")
 
         ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=10)
         self.status_label = ttk.Label(self.root, text="就绪", font=("", 11))
@@ -299,8 +301,16 @@ class WorkerApp:
         self.start_btn = ttk.Button(self.root, text="启动处理", command=self._toggle)
         self.start_btn.pack(pady=15)
 
-        ttk.Label(self.root, text="启动后请保持翻译服务运行（端口8001）", font=("", 8), foreground="gray").pack()
+        ttk.Label(self.root, text="点击启动：自动拉起翻译服务 + 开始处理任务", font=("", 8), foreground="gray").pack()
         ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
+
+    def _start_translator(self):
+        """后台启动翻译服务"""
+        import subprocess
+        venv_python = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                   'manga-image-translator', 'venv', 'Scripts', 'python.exe')
+        subprocess.Popen([venv_python, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def _toggle(self):
         global _running
@@ -309,6 +319,11 @@ class WorkerApp:
             self.start_btn.config(text="启动处理")
             self.status_label.config(text="已停止")
         else:
+            # 启动翻译服务
+            self.status_label.config(text="启动翻译服务中...")
+            self._start_translator()
+            import time
+            time.sleep(8)  # 等模型加载
             _running = True
             self.start_btn.config(text="停止")
             self.status_label.config(text="空闲中")
