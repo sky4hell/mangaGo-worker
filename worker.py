@@ -187,9 +187,10 @@ def worker_loop(status_callback):
             if task:
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                for img in pending:
+                processed = task.get("completedCount", 0) + task.get("failedCount", 0)
+                for idx, img in enumerate(pending):
                     try:
-                        status_callback(f"OCR {task['completedCount']+task['failedCount']+1}/{total}")
+                        status_callback(f"OCR {processed + idx + 1}/{total}")
                         r = process_ocr_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -222,9 +223,10 @@ def worker_loop(status_callback):
             if task:
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                for img in pending:
+                processed = task.get("completedCount", 0) + task.get("failedCount", 0)
+                for idx, img in enumerate(pending):
                     try:
-                        status_callback(f"修图 {task['completedCount']+task['failedCount']+1}/{total}")
+                        status_callback(f"修图 {processed + idx + 1}/{total}")
                         r = process_retouch_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {

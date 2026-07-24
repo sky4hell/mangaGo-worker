@@ -120,3 +120,455 @@
 2026-07-24 17:36:18,654 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/30.webp HTTP/1.1" 200 166984
 2026-07-24 17:36:20,081 [INFO] OCR ERROR img#30: cannot access local variable 'r' where it is not associated with a value
 2026-07-24 17:36:20,083 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:21,082 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:21,084 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:22,268 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/31_32_merged.png HTTP/1.1" 200 1240146
+2026-07-24 17:36:26,084 [INFO] OCR ERROR img#50: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:26,085 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:27,085 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:27,089 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:28,479 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/33.webp HTTP/1.1" 200 80404
+2026-07-24 17:36:29,411 [INFO] OCR ERROR img#33: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:29,413 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:30,713 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:30,717 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:31,957 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/34.webp HTTP/1.1" 200 332597
+2026-07-24 17:36:34,082 [INFO] OCR ERROR img#34: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:34,084 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:35,041 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:35,044 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:36,719 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/35.webp HTTP/1.1" 200 359220
+2026-07-24 17:36:38,518 [INFO] OCR ERROR img#35: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:38,519 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:40,554 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:40,556 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:41,825 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/36.webp HTTP/1.1" 200 95802
+2026-07-24 17:36:42,244 [INFO] OCR ERROR img#36: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:42,244 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:43,391 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:43,395 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:44,475 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/37.webp HTTP/1.1" 200 110955
+2026-07-24 17:36:45,021 [INFO] OCR ERROR img#37: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:45,022 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:46,123 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:46,126 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:47,347 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/38_40_merged.png HTTP/1.1" 200 2079703
+2026-07-24 17:36:54,380 [INFO] OCR ERROR img#49: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:36:54,382 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:36:58,001 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:36:59,067 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:00,434 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/41.webp HTTP/1.1" 200 249607
+2026-07-24 17:37:02,232 [INFO] OCR ERROR img#41: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:37:02,233 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:05,852 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:37:05,856 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:07,287 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/42.webp HTTP/1.1" 200 275012
+2026-07-24 17:37:08,278 [INFO] OCR ERROR img#42: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:37:08,280 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:09,240 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:37:09,244 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:11,488 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/43.webp HTTP/1.1" 200 31502
+2026-07-24 17:37:11,698 [INFO] OCR ERROR img#43: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:37:11,699 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:13,670 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:37:13,674 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:14,869 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/44_45_merged.png HTTP/1.1" 200 3408386
+2026-07-24 17:37:26,678 [INFO] OCR ERROR img#53: cannot access local variable 'r' where it is not associated with a value
+2026-07-24 17:37:26,679 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:27,825 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:37:27,827 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:37:27,829 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:29,098 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:37:34,101 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:37:34,102 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:35,550 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:37:35,552 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:37:35,552 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:37:35,554 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:37:37,717 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:37:57,572 [INFO] worker_id: 20e74a25
+2026-07-24 17:38:00,529 [INFO] poll_token: got token len=243
+2026-07-24 17:38:00,541 [INFO] auto_start: begin
+2026-07-24 17:38:04,611 [INFO] auto_start: translator ready at 0s
+2026-07-24 17:38:04,612 [INFO] auto_start: done, starting worker_loop
+2026-07-24 17:38:04,613 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:38:04,616 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:05,656 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:38:05,657 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:38:05,657 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:38:05,658 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:06,782 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:38:11,784 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:38:11,785 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:13,339 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:38:13,340 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:38:13,340 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:38:13,341 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:14,360 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:38:19,362 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:38:19,363 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:20,597 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:38:20,599 [INFO] poll ocr: code=200 task=True pending=31
+2026-07-24 17:38:20,600 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:21,938 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/1.webp HTTP/1.1" 200 69342
+2026-07-24 17:38:22,521 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:38:28,917 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 520
+2026-07-24 17:38:28,918 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:30,334 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:38:30,336 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:31,590 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/3.webp HTTP/1.1" 200 209142
+2026-07-24 17:38:32,077 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:38:34,775 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 208
+2026-07-24 17:38:34,777 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:35,971 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:38:35,974 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:37,206 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/5.webp HTTP/1.1" 200 171478
+2026-07-24 17:38:37,813 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:38:40,648 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 208
+2026-07-24 17:38:40,648 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:43,622 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:38:43,625 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:44,774 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/7.webp HTTP/1.1" 200 95040
+2026-07-24 17:38:45,572 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:38:48,527 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 645
+2026-07-24 17:38:48,528 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:49,589 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:38:49,591 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:50,816 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/9.webp HTTP/1.1" 200 182770
+2026-07-24 17:38:51,844 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:38:54,672 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 208
+2026-07-24 17:38:54,673 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:56,041 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:38:56,044 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:38:57,331 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/11.webp HTTP/1.1" 200 26267
+2026-07-24 17:38:57,663 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:00,268 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:00,269 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:01,407 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:01,410 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:04,033 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/13.webp HTTP/1.1" 200 290270
+2026-07-24 17:39:06,379 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:09,070 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:09,071 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:10,119 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:10,121 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:11,512 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/14.webp HTTP/1.1" 200 255354
+2026-07-24 17:39:12,504 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:15,283 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:15,284 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:16,624 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:16,626 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:17,853 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/15.webp HTTP/1.1" 200 52579
+2026-07-24 17:39:18,168 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:20,580 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:20,581 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:22,038 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:22,041 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:23,380 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/16.webp HTTP/1.1" 200 93392
+2026-07-24 17:39:24,514 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:27,530 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 600
+2026-07-24 17:39:27,531 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:29,216 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:29,219 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:30,556 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/17.webp HTTP/1.1" 200 213710
+2026-07-24 17:39:31,544 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:34,449 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:34,450 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:35,682 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:35,684 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:36,878 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/18.webp HTTP/1.1" 200 28842
+2026-07-24 17:39:36,898 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:39,450 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:39:39,450 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:40,461 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:40,463 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:41,710 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/19.webp HTTP/1.1" 200 221316
+2026-07-24 17:39:42,833 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:45,719 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 500
+2026-07-24 17:39:45,720 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:46,829 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:46,831 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:48,163 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/20.webp HTTP/1.1" 200 194328
+2026-07-24 17:39:49,392 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:39:52,294 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 562
+2026-07-24 17:39:52,295 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:54,700 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:39:54,702 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:39:55,848 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/21_23_merged.png HTTP/1.1" 200 4009251
+2026-07-24 17:40:06,124 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:09,529 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 2863
+2026-07-24 17:40:09,530 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:10,996 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:10,999 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:12,226 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/24.webp HTTP/1.1" 200 284464
+2026-07-24 17:40:13,009 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:16,184 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 1380
+2026-07-24 17:40:16,186 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:17,290 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:17,294 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:20,219 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/25_26_merged.png HTTP/1.1" 200 560216
+2026-07-24 17:40:26,928 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:29,805 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 603
+2026-07-24 17:40:29,807 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:31,050 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:31,053 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:32,250 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/27_28_merged.png HTTP/1.1" 200 1104982
+2026-07-24 17:40:35,258 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:38,268 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 1096
+2026-07-24 17:40:38,269 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:39,469 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:39,472 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:40,882 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/29.webp HTTP/1.1" 200 145577
+2026-07-24 17:40:41,650 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:44,434 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:40:44,435 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:46,483 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:46,487 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:47,802 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/30.webp HTTP/1.1" 200 166984
+2026-07-24 17:40:49,652 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:52,495 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:40:52,497 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:53,805 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:40:53,808 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:40:55,243 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/31_32_merged.png HTTP/1.1" 200 1240146
+2026-07-24 17:40:56,470 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:40:59,433 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 589
+2026-07-24 17:40:59,434 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:00,525 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:00,528 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:01,797 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/33.webp HTTP/1.1" 200 80404
+2026-07-24 17:41:02,410 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:05,321 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 557
+2026-07-24 17:41:05,323 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:06,769 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:06,773 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:08,037 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/34.webp HTTP/1.1" 200 332597
+2026-07-24 17:41:10,257 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:13,305 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 501
+2026-07-24 17:41:13,306 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:15,717 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:15,718 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:17,055 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/35.webp HTTP/1.1" 200 359220
+2026-07-24 17:41:19,531 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:22,457 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:41:22,459 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:24,011 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:24,014 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:25,549 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/36.webp HTTP/1.1" 200 95802
+2026-07-24 17:41:26,270 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:29,310 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 598
+2026-07-24 17:41:29,311 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:30,380 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:30,383 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:32,577 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/37.webp HTTP/1.1" 200 110955
+2026-07-24 17:41:33,304 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:36,312 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 484
+2026-07-24 17:41:36,314 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:37,629 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:37,632 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:38,878 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/38_40_merged.png HTTP/1.1" 200 2079703
+2026-07-24 17:41:43,345 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:46,548 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 488
+2026-07-24 17:41:46,549 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:47,734 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:47,738 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:50,127 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/41.webp HTTP/1.1" 200 249607
+2026-07-24 17:41:51,807 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:41:54,668 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:41:54,669 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:55,755 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:41:55,758 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:41:56,985 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/42.webp HTTP/1.1" 200 275012
+2026-07-24 17:41:57,921 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:42:00,854 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:42:00,856 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:02,107 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:42:02,110 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:03,441 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/43.webp HTTP/1.1" 200 31502
+2026-07-24 17:42:03,451 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:42:06,065 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 209
+2026-07-24 17:42:06,066 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:07,738 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:42:07,741 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:09,172 [DEBUG] https://zalomanga.com:443 "GET /api/downloads/%E6%88%91%E7%9C%9F%E4%B8%8D%E6%98%AF%E5%A4%A9%E5%91%BD%E4%B9%8B%E5%AD%90%20-%20%E5%89%AF%E6%9C%AC/%E7%AB%A0%E8%8A%821_%E5%BA%8F%20%E6%88%91%E8%A6%81%E5%BD%93%E4%B8%BB%E8%A7%92%EF%BC%81/44_45_merged.png HTTP/1.1" 200 3408386
+2026-07-24 17:42:12,703 [DEBUG] Starting new HTTP connection (1): localhost:8001
+2026-07-24 17:42:16,073 [DEBUG] http://localhost:8001 "POST /review/ocr/with-form/batch/json HTTP/1.1" 200 936
+2026-07-24 17:42:16,074 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:18,605 [DEBUG] https://zalomanga.com:443 "POST /api/worker/submit HTTP/1.1" 200 None
+2026-07-24 17:42:18,607 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:18,608 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:19,926 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:42:24,928 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:24,930 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:26,068 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:42:26,069 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:42:26,069 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:26,070 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:27,201 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:42:32,203 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:32,204 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:33,440 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:42:33,442 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:42:33,442 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:33,443 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:34,669 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:42:39,673 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:39,675 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:40,917 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:42:40,918 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:42:40,919 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:40,920 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:42,338 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:42:47,341 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:47,343 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:49,415 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:42:49,417 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:42:49,417 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:49,418 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:51,464 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:42:56,466 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:56,467 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:42:57,724 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:42:57,726 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:42:57,726 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:42:57,727 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:00,487 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:05,490 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:05,491 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:08,475 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:08,477 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:08,477 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:08,478 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:10,933 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:15,937 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:15,939 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:17,313 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:17,315 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:17,315 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:17,317 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:18,404 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:23,407 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:23,409 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:24,644 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:24,646 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:24,646 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:24,647 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:26,075 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:31,078 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:31,079 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:33,582 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:33,583 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:33,584 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:33,585 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:34,883 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:39,886 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:39,887 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:41,231 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:41,233 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:41,233 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:41,234 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:43,105 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:48,108 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:48,108 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:49,322 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:49,324 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:49,324 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:49,325 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:50,593 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:43:55,596 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:55,598 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:57,015 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:43:57,017 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:43:57,017 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:43:57,018 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:43:58,131 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:03,133 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:03,133 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:04,433 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:04,435 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:04,435 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:04,436 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:09,193 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:14,195 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:14,196 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:15,946 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:15,947 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:15,947 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:15,948 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:18,096 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:23,099 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:23,100 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:24,343 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:24,345 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:24,345 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:24,345 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:25,571 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:30,573 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:30,574 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:32,026 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:32,028 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:32,028 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:32,029 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:33,149 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:38,152 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:38,153 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:40,423 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:40,425 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:40,425 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:40,426 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:41,554 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:46,556 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:46,558 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:48,000 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:48,002 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:48,002 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:48,003 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:49,329 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:44:54,332 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:54,333 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:55,575 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:44:55,577 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:44:55,577 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:44:55,578 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:44:57,113 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:02,116 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:02,117 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:03,461 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:03,463 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:03,463 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:03,464 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:05,214 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:10,216 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:10,217 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:13,905 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:13,907 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:13,907 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:13,908 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:15,238 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:20,240 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:20,241 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:21,282 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:21,283 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:21,283 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:21,284 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:22,508 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:27,510 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:27,511 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:28,859 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:28,860 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:28,860 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:28,862 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:30,188 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:35,190 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:35,191 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:36,436 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:36,438 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:36,438 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:36,439 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:37,768 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 17:45:42,771 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:42,772 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 17:45:44,002 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 17:45:44,003 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 17:45:44,003 [INFO] api_get /worker/poll token_len=243
+2026-07-24 17:45:44,004 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
