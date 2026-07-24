@@ -188,22 +188,31 @@ def worker_loop(status_callback):
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 for img in pending:
-                    status_callback(f"OCR {task['completedCount']+task['failedCount']+1}/{total}")
-                    r = process_ocr_task(img)
-                    err = r.get("error", "")
-                    api_post("/worker/submit", {
-                        "taskId": task["taskId"], "type": "ocr",
-                        "imageId": img["imageId"],
-                        "ocrText": r.get("ocrText", ""),
-                        "ocrMetadata": r.get("ocrMetadata")
-                    })
-                    if err:
+                    try:
+                        status_callback(f"OCR {task['completedCount']+task['failedCount']+1}/{total}")
+                        r = process_ocr_task(img)
+                        err = r.get("error", "")
+                        api_post("/worker/submit", {
+                            "taskId": task["taskId"], "type": "ocr",
+                            "imageId": img["imageId"],
+                            "ocrText": r.get("ocrText", ""),
+                            "ocrMetadata": r.get("ocrMetadata")
+                        })
+                        if err:
+                            _stats["errors"] += 1
+                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                            if len(_error_log) > 50:
+                                _error_log.pop()
+                        else:
+                            _stats["ocr"] += 1
+                    except Exception as e:
                         _stats["errors"] += 1
-                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
-                        if len(_error_log) > 50:
-                            _error_log.pop()
-                    else:
-                        _stats["ocr"] += 1
+                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                        try:
+                            api_post("/worker/submit", {"taskId": task["taskId"], "type": "ocr",
+                                "imageId": img["imageId"], "ocrText": "", "ocrMetadata": ""})
+                        except Exception:
+                            pass
                 last_task_time = time.time()
 
             # 轮询修图任务
@@ -213,14 +222,28 @@ def worker_loop(status_callback):
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 for img in pending:
-                    status_callback(f"修图 {task['completedCount']+task['failedCount']+1}/{total}")
-                    r = process_retouch_task(img)
-                    api_post("/worker/submit", {
-                        "taskId": task["taskId"], "type": "retouch",
-                        "imageId": img["imageId"],
-                        "outputImage": r.get("outputImage", "")
-                    })
-                    _stats["retouch"] += 1
+                    try:
+                        status_callback(f"修图 {task['completedCount']+task['failedCount']+1}/{total}")
+                        r = process_retouch_task(img)
+                        err = r.get("error", "")
+                        api_post("/worker/submit", {
+                            "taskId": task["taskId"], "type": "retouch",
+                            "imageId": img["imageId"],
+                            "outputImage": r.get("outputImage", "")
+                        })
+                        if err:
+                            _stats["errors"] += 1
+                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                        else:
+                            _stats["retouch"] += 1
+                    except Exception as e:
+                        _stats["errors"] += 1
+                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                        try:
+                            api_post("/worker/submit", {"taskId": task["taskId"], "type": "retouch",
+                                "imageId": img["imageId"], "outputImage": ""})
+                        except Exception:
+                            pass
                 last_task_time = time.time()
 
             if time.time() - last_task_time > 10:
