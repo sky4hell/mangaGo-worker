@@ -369,4 +369,13 @@ class WorkerApp:
 
 
 if __name__ == "__main__":
+    # 单实例锁
+    import socket
+    lock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        lock.bind(('127.0.0.1', 19527))
+    except socket.error:
+        import tkinter.messagebox as mb
+        mb.showwarning("mangaGo Worker", "Worker 已在运行中")
+        sys.exit(0)
     WorkerApp()
