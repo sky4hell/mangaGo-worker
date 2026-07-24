@@ -3,12 +3,13 @@ mangaGo Worker — 桌面程序
 登录 → 轮询取任务 → 调用本地翻译服务 → 提交结果
 """
 import os
+import shutil
 import sys
 import json
 import time
 import threading
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 import requests
 
 # ====== 日志 ======
@@ -97,6 +98,13 @@ def _get_image_bytes(local_path):
                 return f.read()
     r = requests.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
     r.raise_for_status()
+    # 下载后存本地，下次直接读盘
+    try:
+        os.makedirs(os.path.dirname(fp), exist_ok=True)
+        with open(fp, 'wb') as f:
+            f.write(r.content)
+    except Exception:
+        pass
     return r.content
 
 
@@ -265,6 +273,34 @@ def worker_loop(status_callback):
 class WorkerApp:
     def __init__(self):
         self.error_text = None
+        self.import_status = None
+
+    def _import_images(self):
+        folder = filedialog.askdirectory(title="选择图片文件夹")
+        if not folder:
+            return
+        dest_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                 'manga-image-translator', 'downloads')
+        def do_import():
+            copied = 0
+            errors = 0
+            for root, dirs, files in os.walk(folder):
+                for f in files:
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
+                        src = os.path.join(root, f)
+                        # 保持相对路径结构
+                        rel = os.path.relpath(src, folder)
+                        dst = os.path.join(dest_root, rel)
+                        try:
+                            os.makedirs(os.path.dirname(dst), exist_ok=True)
+                            shutil.copy2(src, dst)
+                            copied += 1
+                        except Exception:
+                            errors += 1
+            self.root.after(0, lambda: self.import_status.config(
+                text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
+        self.import_status.config(text="导入中...", foreground="blue")
+        threading.Thread(target=do_import, daemon=True).start()
         self.root = tk.Tk()
         self.root.title("mangaGo Worker")
         self.root.geometry("420x350")
@@ -354,6 +390,11 @@ class WorkerApp:
         ttk.Label(frame, text="修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
         ttk.Label(frame, text="错误: 0", foreground="red").grid(row=0, column=2, padx=10)
         self.stats_frame = frame
+        btn_frame = ttk.Frame(self.root)
+        btn_frame.pack(pady=5)
+        ttk.Button(btn_frame, text="导入图片", command=self._import_images).pack(side="left", padx=5)
+        self.import_status = ttk.Label(btn_frame, text="", foreground="gray")
+        self.import_status.pack(side="left", padx=5)
         self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
         self.translator_status.pack(pady=5)
         # 错误列表
