@@ -34,6 +34,7 @@ _token = None
 _user_info = None
 _running = False
 _stats = {"ocr": 0, "retouch": 0, "errors": 0}
+_error_log = []  # [(time, imageId, error_msg)]
 
 
 def api_post(path, data=None):
@@ -189,13 +190,20 @@ def worker_loop(status_callback):
                 for img in pending:
                     status_callback(f"OCR {task['completedCount']+task['failedCount']+1}/{total}")
                     r = process_ocr_task(img)
+                    err = r.get("error", "")
                     api_post("/worker/submit", {
                         "taskId": task["taskId"], "type": "ocr",
                         "imageId": img["imageId"],
                         "ocrText": r.get("ocrText", ""),
                         "ocrMetadata": r.get("ocrMetadata")
                     })
-                    _stats["ocr"] += 1
+                    if err:
+                        _stats["errors"] += 1
+                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                        if len(_error_log) > 50:
+                            _error_log.pop()
+                    else:
+                        _stats["ocr"] += 1
                 last_task_time = time.time()
 
             # 轮询修图任务
@@ -229,6 +237,7 @@ def worker_loop(status_callback):
 # ====== GUI ======
 class WorkerApp:
     def __init__(self):
+        self.error_text = None
         self.root = tk.Tk()
         self.root.title("mangaGo Worker")
         self.root.geometry("420x350")
@@ -320,7 +329,14 @@ class WorkerApp:
         self.stats_frame = frame
         self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
         self.translator_status.pack(pady=5)
-        ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
+        # 错误列表
+        err_frame = ttk.LabelFrame(self.root, text="处理日志（最近50条）")
+        err_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.error_text = tk.Text(err_frame, height=6, font=("Consolas", 8), state="disabled", wrap="word")
+        scrollbar = ttk.Scrollbar(err_frame, command=self.error_text.yview)
+        self.error_text.configure(yscrollcommand=scrollbar.set)
+        self.error_text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
         threading.Thread(target=self._auto_start, daemon=True).start()
 
     def _start_translator(self):
@@ -372,6 +388,16 @@ class WorkerApp:
         ttk.Label(self.stats_frame, text=f"OCR: {_stats['ocr']}", font=("", 10)).grid(row=0, column=0, padx=10)
         ttk.Label(self.stats_frame, text=f"修图: {_stats['retouch']}", font=("", 10)).grid(row=0, column=1, padx=10)
         ttk.Label(self.stats_frame, text=f"错误: {_stats['errors']}", foreground="red").grid(row=0, column=2, padx=10)
+        self._refresh_errors()
+
+    def _refresh_errors(self):
+        if not self.error_text:
+            return
+        self.error_text.configure(state="normal")
+        self.error_text.delete(1.0, "end")
+        for t, iid, err in _error_log[:20]:
+            self.error_text.insert("end", f"[{t}] img#{iid} {err[:80]}\n")
+        self.error_text.configure(state="disabled")
 
 
 if __name__ == "__main__":
