@@ -279,7 +279,9 @@ class WorkerApp:
             sock.listen(1)
             sock.settimeout(120)
             try:
+                _log('ws: waiting for connection on :9527')
                 conn, _ = sock.accept()
+                _log('ws: client connected')
                 data = conn.recv(4096).decode()
                 # WebSocket 握手
                 key = ''
@@ -301,6 +303,7 @@ class WorkerApp:
                         else:
                             payload = frame[6:6+payload_len]
                         tk = bytes(b ^ mask[i % 4] for i, b in enumerate(payload)).decode()
+                        _log(f'ws: received token len={len(tk)} prefix={tk[:20]}')
                         global _token, _user_info
                         _token = tk
                         parent.root.after(0, parent._setup_main)
