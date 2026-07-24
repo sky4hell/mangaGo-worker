@@ -309,7 +309,8 @@ class WorkerApp:
         ttk.Label(frame, text=f"错误: 0", foreground="red").grid(row=0, column=2, padx=10)
         self.stats_frame = frame
 
-        ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue").pack(pady=5)
+        self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
+        self.translator_status.pack(pady=5)
         ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
         # 自动启动翻译服务 + 开始处理
         threading.Thread(target=self._auto_start, daemon=True).start()
@@ -325,9 +326,12 @@ class WorkerApp:
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si)
         _log(f'start_translator: pid={p.pid}')
 
+    def _update_translator_status(self, text, color="blue"):
+        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
+
     def _auto_start(self):
         _log('auto_start: begin')
-        self.update_status("启动翻译服务中...")
+        self._update_translator_status("翻译服务启动中...")
         self._start_translator()
         import time
         for i in range(30):
@@ -336,10 +340,11 @@ class WorkerApp:
                 import urllib.request
                 urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
                 _log(f'auto_start: translator ready at {i*2}s')
+                self._update_translator_status("翻译服务已就绪 ✅", "green")
                 break
             except Exception as e:
                 _log(f'auto_start: wait {i*2}s err={e}')
-                self.update_status(f"等待翻译服务就绪 ({i*2}s)...")
+                self._update_translator_status(f"等待翻译服务 ({i*2}s)...", "orange")
         global _running
         _running = True
         _log('auto_start: done, starting worker_loop')
