@@ -158,16 +158,6 @@ def process_retouch_task(task):
         return {"imageId": task["imageId"], "outputImage": "", "error": str(e)}
 
 
-def process_task(task):
-    """处理单个任务"""
-    ttype = task["type"]
-    if ttype == "ocr":
-        return process_ocr_task(task)
-    elif ttype == "retouch":
-        return process_retouch_task(task)
-    return None
-
-
 def worker_loop(status_callback):
     """后台工作线程"""
     global _running, _stats
@@ -175,30 +165,40 @@ def worker_loop(status_callback):
 
     while _running:
         try:
-            tasks_data = api_get("/worker/poll", {"type": "ocr", "limit": 3})
-            if tasks_data.get("code") == 200:
-                tasks = tasks_data.get("data", {}).get("tasks", [])
-                if tasks:
-                    status_callback(f"处理中: OCR × {len(tasks)}")
-                    results = [process_task(t) for t in tasks]
-                    r = api_post("/worker/submit", {"type": "ocr", "results": results})
-                    if r.get("code") == 200:
-                        _stats["ocr"] += r.get("data", {}).get("success", 0)
-                        _stats["errors"] += r.get("data", {}).get("failed", 0)
-                    last_task_time = time.time()
+            # 轮询 OCR 任务
+            data = api_get("/worker/poll", {"type": "ocr"})
+            task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
+            if task:
+                pending = task.get("pendingImages", [])
+                total = task.get("totalImages", 0)
+                for img in pending:
+                    status_callback(f"OCR {task['completedCount']+task['failedCount']+1}/{total}")
+                    r = process_ocr_task(img)
+                    api_post("/worker/submit", {
+                        "taskId": task["taskId"], "type": "ocr",
+                        "imageId": img["imageId"],
+                        "ocrText": r.get("ocrText", ""),
+                        "ocrMetadata": r.get("ocrMetadata")
+                    })
+                    _stats["ocr"] += 1
+                last_task_time = time.time()
 
-            # OCR 和 retouch 交替处理
-            tasks_data = api_get("/worker/poll", {"type": "retouch", "limit": 3})
-            if tasks_data.get("code") == 200:
-                tasks = tasks_data.get("data", {}).get("tasks", [])
-                if tasks:
-                    status_callback(f"处理中: 修图 × {len(tasks)}")
-                    results = [process_task(t) for t in tasks]
-                    r = api_post("/worker/submit", {"type": "retouch", "results": results})
-                    if r.get("code") == 200:
-                        _stats["retouch"] += r.get("data", {}).get("success", 0)
-                        _stats["errors"] += r.get("data", {}).get("failed", 0)
-                    last_task_time = time.time()
+            # 轮询修图任务
+            data = api_get("/worker/poll", {"type": "retouch"})
+            task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
+            if task:
+                pending = task.get("pendingImages", [])
+                total = task.get("totalImages", 0)
+                for img in pending:
+                    status_callback(f"修图 {task['completedCount']+task['failedCount']+1}/{total}")
+                    r = process_retouch_task(img)
+                    api_post("/worker/submit", {
+                        "taskId": task["taskId"], "type": "retouch",
+                        "imageId": img["imageId"],
+                        "outputImage": r.get("outputImage", "")
+                    })
+                    _stats["retouch"] += 1
+                last_task_time = time.time()
 
             if time.time() - last_task_time > 10:
                 status_callback("空闲中")
