@@ -109,7 +109,7 @@ def process_ocr_task(task):
                 "error": f"获取图片失败: {e}"}
 
     filename = os.path.basename(task["localPath"])
-    files = [("images", (filename, r.content, "image/png"))]
+    files = [("images", (filename, img_bytes, "image/png"))]
     config = json.dumps({
         "ocr": {"ocr": "48px_ctc", "min_text_length": 1},
         "translator": {"translator": "none"},
