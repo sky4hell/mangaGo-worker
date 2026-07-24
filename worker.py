@@ -280,7 +280,8 @@ class WorkerApp:
             for i in range(120):
                 time.sleep(2)
                 try:
-                    req = urllib.request.Request(f"{API_BASE}/worker/token?id={worker_id}")
+                    req = urllib.request.Request(f"{API_BASE}/worker/token?id={worker_id}",
+                        headers={'User-Agent': 'mangaGo-Worker/1.0'})
                     r = urllib.request.urlopen(req, timeout=10)
                     data = json.loads(r.read())
                     tk = (data.get('data') or {}).get('token')
