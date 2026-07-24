@@ -267,126 +267,37 @@ class WorkerApp:
         self.root.after(0, lambda: self.login_status.config(text="请登录"))
 
     def _start_web_login(self):
-        import socket, hashlib, base64, struct
+        global _token, _user_info
         self.login_status.config(text="等待浏览器认证...", foreground="blue")
         self.login_btn.config(state="disabled")
+        import uuid, webbrowser, urllib.request, time
+        worker_id = str(uuid.uuid4())[:8]
+        _log(f'worker_id: {worker_id}')
+        self.login_status.config(text=f"连接码: {worker_id}")
+        webbrowser.open(f"{API_BASE.replace('/api', '')}/admin?connect={worker_id}")
         parent = self
-
-        def ws_server():
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(('127.0.0.1', 9527))
-            sock.listen(1)
-            sock.settimeout(120)
-            try:
-                _log('ws: waiting for connection on :9527')
-                conn, _ = sock.accept()
-                _log('ws: client connected')
-                data = conn.recv(4096).decode()
-                _log(f'ws: recv {len(data)} bytes, first_line={data[:80]}')
-                # WebSocket 握手
-                key = ''
-                for line in data.split('\r\n'):
-                    if line.lower().startswith('sec-websocket-key:'):
-                        key = line.split(':', 1)[1].strip()
-                if key:
-                    accept = base64.b64encode(
-                        hashlib.sha1((key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').encode()).digest()
-                    ).decode()
-                    conn.send(f'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {accept}\r\n\r\n'.encode())
-                    _log('ws: handshake OK, waiting for frame')
-                    # 读第一帧
-                    frame = conn.recv(4096)
-                    _log(f'ws: received {len(frame)} bytes')
-                    if len(frame) >= 6:
-                        mask = frame[2:6]
-                        payload_len = frame[1] & 0x7f
-                        if payload_len == 126:
-                            payload = frame[8:8+struct.unpack('>H', frame[6:8])[0]]
-                        else:
-                            payload = frame[6:6+payload_len]
-                        tk = bytes(b ^ mask[i % 4] for i, b in enumerate(payload)).decode()
-                        _log(f'ws: received token len={len(tk)} prefix={tk[:20]}')
-                        global _token, _user_info
+        def poll_token():
+            for i in range(120):
+                time.sleep(2)
+                try:
+                    req = urllib.request.Request(f"{API_BASE}/worker/token?id={worker_id}")
+                    r = urllib.request.urlopen(req, timeout=10)
+                    data = json.loads(r.read())
+                    tk = (data.get('data') or {}).get('token')
+                    if tk:
                         _token = tk
-                        parent.root.after(0, parent._setup_main)
                         try:
                             with open('token.txt', 'w') as f:
                                 f.write(tk)
                         except Exception:
                             pass
-                conn.close()
-            except socket.timeout:
-                _log('ws: timeout')
-            except Exception as e:
-                _log(f'ws: error {e}')
-                import traceback; _log(traceback.format_exc())
-            sock.close()
-            _log('ws: server closed')
-
-        threading.Thread(target=ws_server, daemon=True).start()
-        import webbrowser
-        webbrowser.open(f"{API_BASE.replace('/api', '')}/admin?worker_callback=9527")
-
-    def _setup_main(self):
-        for w in self.root.winfo_children():
-            w.destroy()
-        self.root.title(f"mangaGo Worker — 已连接")
-        self.root.geometry("420x350")
-
-        ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=10)
-        self.status_label = ttk.Label(self.root, text="就绪", font=("", 11))
-        self.status_label.pack()
-
-        frame = ttk.Frame(self.root)
-        frame.pack(pady=15)
-        ttk.Label(frame, text=f"OCR 处理: 0", font=("", 10)).grid(row=0, column=0, padx=10)
-        ttk.Label(frame, text=f"修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
-        ttk.Label(frame, text=f"错误: 0", foreground="red").grid(row=0, column=2, padx=10)
-        self.stats_frame = frame
-
-        self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
-        self.translator_status.pack(pady=5)
-        ttk.Label(self.root, text="可最小化到后台，自动静默处理", font=("", 8), foreground="gray").pack()
-        # 自动启动翻译服务 + 开始处理
-        threading.Thread(target=self._auto_start, daemon=True).start()
-
-    def _start_translator(self):
-        """后台启动翻译服务"""
-        import subprocess
-        venv_pyw = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                'manga-image-translator', 'venv', 'Scripts', 'pythonw.exe')
-        env = os.environ.copy()
-        env['PYTHONW_SUPPRESS_STDERR'] = '1'
-        p = subprocess.Popen([venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
-        _log(f'start_translator: pid={p.pid}')
-
-    def _update_translator_status(self, text, color="blue"):
-        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
-
-    def _auto_start(self):
-        _log('auto_start: begin')
-        self._update_translator_status("翻译服务启动中...")
-        self._start_translator()
-        import time
-        for i in range(30):
-            time.sleep(2)
-            try:
-                import urllib.request
-                urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
-                _log(f'auto_start: translator ready at {i*2}s')
-                self._update_translator_status("翻译服务已就绪 ✅", "green")
-                break
-            except Exception as e:
-                _log(f'auto_start: wait {i*2}s err={e}')
-                self._update_translator_status(f"等待翻译服务 ({i*2}s)...", "orange")
-        global _running
-        _running = True
-        _log('auto_start: done, starting worker_loop')
-        self.update_status("空闲中")
-        threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
-        threading.Thread(target=self._stats_updater, daemon=True).start()
+                        parent.root.after(0, parent._setup_main)
+                        return
+                except Exception as e:
+                    _log(f'poll_token: {e}')
+            parent.root.after(0, lambda: parent.login_status.config(text="连接超时，请重试"))
+            parent.root.after(0, lambda: parent.login_btn.config(state="normal"))
+        threading.Thread(target=poll_token, daemon=True).start()
 
     def update_status(self, msg):
         self.root.after(0, lambda: self.status_label.config(text=msg))
