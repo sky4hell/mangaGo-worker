@@ -293,8 +293,10 @@ class WorkerApp:
                         hashlib.sha1((key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').encode()).digest()
                     ).decode()
                     conn.send(f'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {accept}\r\n\r\n'.encode())
+                    _log('ws: handshake OK, waiting for frame')
                     # 读第一帧
                     frame = conn.recv(4096)
+                    _log(f'ws: received {len(frame)} bytes')
                     if len(frame) >= 6:
                         mask = frame[2:6]
                         payload_len = frame[1] & 0x7f
@@ -314,8 +316,12 @@ class WorkerApp:
                             pass
                 conn.close()
             except socket.timeout:
-                pass
+                _log('ws: timeout')
+            except Exception as e:
+                _log(f'ws: error {e}')
+                import traceback; _log(traceback.format_exc())
             sock.close()
+            _log('ws: server closed')
 
         threading.Thread(target=ws_server, daemon=True).start()
         import webbrowser

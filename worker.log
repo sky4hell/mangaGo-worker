@@ -695,3 +695,5 @@
 2026-07-24 16:38:05,559 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
 2026-07-24 16:38:05,560 [INFO] poll ocr: code=401 task=False pending=0
 2026-07-24 16:38:05,560 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 16:40:52,902 [INFO] ws: waiting for connection on :9527
+2026-07-24 16:40:54,400 [INFO] ws: client connected
