@@ -258,7 +258,8 @@ class WorkerApp:
                 req = urllib.request.Request(f"{API_BASE}/worker/poll?type=ocr",
                     headers={"Authorization": f"Bearer {tk}"})
                 r = urllib.request.urlopen(req, timeout=10)
-                if r.status != 401:
+                data = json.loads(r.read())
+                if data.get('code') != 401:
                     _token = tk
                     self.root.after(0, self._setup_main)
                     return
