@@ -315,7 +315,7 @@ class WorkerApp:
                             copied += 1
                         except Exception:
                             errors += 1
-            parent.root.after(0, lambda: self.import_status.config(
+            self.root.after(0, lambda: self.import_status.config(
                 text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
         self.import_status.config(text="导入中...", foreground="blue")
         threading.Thread(target=do_import, daemon=True).start()
@@ -366,7 +366,7 @@ class WorkerApp:
                     return
         except Exception:
             pass
-        parent.root.after(0, lambda: self.login_status.config(text="请登录"))
+        self.root.after(0, lambda: self.login_status.config(text="请登录"))
 
     def _start_web_login(self):
         global _token, _user_info
@@ -400,8 +400,8 @@ class WorkerApp:
                         return
                 except Exception as e:
                     _log(f'poll_token: {e}')
-            parent.root.after(0, lambda: parent.login_status.config(text="连接超时，请重试"))
-            parent.root.after(0, lambda: parent.login_btn.config(state="normal"))
+            self.root.after(0, lambda: parent.login_status.config(text="连接超时，请重试"))
+            self.root.after(0, lambda: parent.login_btn.config(state="normal"))
         threading.Thread(target=poll_token, daemon=True).start()
 
     def _setup_main(self):
@@ -452,7 +452,7 @@ class WorkerApp:
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
 
     def _update_translator_status(self, text, color="blue"):
-        parent.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
+        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
 
     def _auto_start(self):
         _log('auto_start: begin')
@@ -495,7 +495,7 @@ class WorkerApp:
                 self._update_translator_status("翻译服务已就绪", "green")
 
     def update_status(self, msg):
-        parent.root.after(0, lambda: self.status_label.config(text=msg))
+        self.root.after(0, lambda: self.status_label.config(text=msg))
 
     def _stats_updater(self):
         while _running:
