@@ -274,6 +274,12 @@ class WorkerApp:
     def __init__(self):
         self.error_text = None
         self.import_status = None
+        self.root = tk.Tk()
+        self.root.title("mangaGo Worker")
+        self.root.geometry("420x200")
+        self.root.resizable(False, False)
+        self._setup_login()
+        self.root.mainloop()
 
     def _import_images(self):
         folder = filedialog.askdirectory(title="选择图片文件夹")
@@ -478,8 +484,4 @@ if __name__ == "__main__":
         import tkinter.messagebox as mb
         mb.showwarning("mangaGo Worker", "Worker 已在运行中")
         sys.exit(0)
-    try:
-        WorkerApp()
-    except Exception as e:
-        import traceback, tkinter.messagebox as mb
-        mb.showerror("Worker 启动失败", traceback.format_exc())
+    WorkerApp()
