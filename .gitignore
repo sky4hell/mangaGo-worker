@@ -1,2 +1,4 @@
 dist/
 worker.log
+token.txt
+__pycache__/
