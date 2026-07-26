@@ -282,21 +282,24 @@ class WorkerApp:
         self.root.mainloop()
 
     def _import_images(self):
-        folder = filedialog.askdirectory(title="选择图片文件夹")
+        folder = filedialog.askdirectory(title="选择漫画文件夹（包含章节子目录）")
         if not folder:
             return
+        # 漫画名 = 选中的文件夹名
+        comic_name = os.path.basename(folder)
         dest_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                  'manga-image-translator', 'downloads')
         def do_import():
             copied = 0
             errors = 0
-            for root, dirs, files in os.walk(folder):
-                for f in files:
+            for chapter_dir in os.listdir(folder):
+                chapter_path = os.path.join(folder, chapter_dir)
+                if not os.path.isdir(chapter_path):
+                    continue
+                for f in os.listdir(chapter_path):
                     if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
-                        src = os.path.join(root, f)
-                        # 保持相对路径结构
-                        rel = os.path.relpath(src, folder)
-                        dst = os.path.join(dest_root, rel)
+                        src = os.path.join(chapter_path, f)
+                        dst = os.path.join(dest_root, comic_name, chapter_dir, f)
                         try:
                             os.makedirs(os.path.dirname(dst), exist_ok=True)
                             shutil.copy2(src, dst)
