@@ -184,8 +184,9 @@ def process_retouch_task(task):
         return {"imageId": task["imageId"], "outputImage": "", "error": str(e)}
 
 
-def worker_loop(status_callback):
+def worker_loop(parent):
     """后台工作线程"""
+    status_callback = parent.update_status
     global _running, _stats
     last_task_time = time.time()
 
@@ -201,8 +202,8 @@ def worker_loop(status_callback):
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
                 for idx, img in enumerate(pending):
                     try:
-                        self.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
-                            self.task_label.config(text=f"{tid}  OCR {p}/{t}"))
+                        parent.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
+                            parent.task_label.config(text=f"{tid}  OCR {p}/{t}"))
                         r = process_ocr_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -238,8 +239,8 @@ def worker_loop(status_callback):
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
                 for idx, img in enumerate(pending):
                     try:
-                        self.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
-                            self.task_label.config(text=f"{tid}  修图 {p}/{t}"))
+                        parent.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
+                            parent.task_label.config(text=f"{tid}  修图 {p}/{t}"))
                         r = process_retouch_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -265,7 +266,7 @@ def worker_loop(status_callback):
 
             if time.time() - last_task_time > 10:
                 status_callback("空闲中")
-                self.root.after(0, lambda: self.task_label.config(text=""))
+                parent.root.after(0, lambda: parent.task_label.config(text=""))
         except requests.ConnectionError:
             status_callback("连接失败，重试中...")
         except Exception as e:
@@ -314,7 +315,7 @@ class WorkerApp:
                             copied += 1
                         except Exception:
                             errors += 1
-            self.root.after(0, lambda: self.import_status.config(
+            parent.root.after(0, lambda: self.import_status.config(
                 text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
         self.import_status.config(text="导入中...", foreground="blue")
         threading.Thread(target=do_import, daemon=True).start()
@@ -365,7 +366,7 @@ class WorkerApp:
                     return
         except Exception:
             pass
-        self.root.after(0, lambda: self.login_status.config(text="请登录"))
+        parent.root.after(0, lambda: self.login_status.config(text="请登录"))
 
     def _start_web_login(self):
         global _token, _user_info
@@ -451,7 +452,7 @@ class WorkerApp:
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
 
     def _update_translator_status(self, text, color="blue"):
-        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
+        parent.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
 
     def _auto_start(self):
         _log('auto_start: begin')
@@ -473,7 +474,7 @@ class WorkerApp:
         _running = True
         _log('auto_start: done, starting worker_loop')
         self.update_status("空闲中")
-        threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
+        threading.Thread(target=worker_loop, args=(self,), daemon=True).start()
         threading.Thread(target=self._stats_updater, daemon=True).start()
         threading.Thread(target=self._translator_watchdog, daemon=True).start()
 
@@ -494,7 +495,7 @@ class WorkerApp:
                 self._update_translator_status("翻译服务已就绪", "green")
 
     def update_status(self, msg):
-        self.root.after(0, lambda: self.status_label.config(text=msg))
+        parent.root.after(0, lambda: self.status_label.config(text=msg))
 
     def _stats_updater(self):
         while _running:
