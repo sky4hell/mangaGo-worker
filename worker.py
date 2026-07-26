@@ -201,7 +201,8 @@ def worker_loop(status_callback):
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
                 for idx, img in enumerate(pending):
                     try:
-                        status_callback(f"OCR {processed + idx + 1}/{total}")
+                        self.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
+                            self.task_label.config(text=f"{tid}  OCR {p}/{t}"))
                         r = process_ocr_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -237,7 +238,8 @@ def worker_loop(status_callback):
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
                 for idx, img in enumerate(pending):
                     try:
-                        status_callback(f"修图 {processed + idx + 1}/{total}")
+                        self.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
+                            self.task_label.config(text=f"{tid}  修图 {p}/{t}"))
                         r = process_retouch_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -263,6 +265,7 @@ def worker_loop(status_callback):
 
             if time.time() - last_task_time > 10:
                 status_callback("空闲中")
+                self.root.after(0, lambda: self.task_label.config(text=""))
         except requests.ConnectionError:
             status_callback("连接失败，重试中...")
         except Exception as e:
@@ -413,6 +416,8 @@ class WorkerApp:
         ttk.Label(frame, text="修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
         ttk.Label(frame, text="错误: 0", foreground="red").grid(row=0, column=2, padx=10)
         self.stats_frame = frame
+        self.task_label = ttk.Label(self.root, text="", font=("", 10), foreground="#409eff")
+        self.task_label.pack(pady=3)
         import_frame = ttk.LabelFrame(self.root, text="本地图片")
         import_frame.pack(fill="x", padx=10, pady=5)
         row = ttk.Frame(import_frame)
