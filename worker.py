@@ -307,12 +307,6 @@ class WorkerApp:
                 text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
         self.import_status.config(text="导入中...", foreground="blue")
         threading.Thread(target=do_import, daemon=True).start()
-        self.root = tk.Tk()
-        self.root.title("mangaGo Worker")
-        self.root.geometry("420x350")
-        self.root.resizable(False, False)
-        self._setup_login()
-        self.root.mainloop()
 
     def _setup_login(self):
         for w in self.root.winfo_children():
