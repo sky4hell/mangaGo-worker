@@ -14013,3 +14013,17 @@
 2026-07-24 22:10:13,435 [INFO] api_get /worker/poll token_len=243
 2026-07-24 22:10:13,436 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
 2026-07-24 22:10:14,536 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 22:10:20,327 [INFO] api_get /worker/poll token_len=243
+2026-07-24 22:10:20,329 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 22:10:23,073 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 22:10:23,075 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 22:10:23,075 [INFO] api_get /worker/poll token_len=243
+2026-07-24 22:10:23,075 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 22:10:25,280 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None
+2026-07-24 22:10:30,283 [INFO] api_get /worker/poll token_len=243
+2026-07-24 22:10:30,283 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 22:10:33,109 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=ocr HTTP/1.1" 200 None
+2026-07-24 22:10:33,110 [INFO] poll ocr: code=200 task=False pending=0
+2026-07-24 22:10:33,110 [INFO] api_get /worker/poll token_len=243
+2026-07-24 22:10:33,111 [DEBUG] Starting new HTTPS connection (1): zalomanga.com:443
+2026-07-24 22:10:35,669 [DEBUG] https://zalomanga.com:443 "GET /api/worker/poll?type=retouch HTTP/1.1" 200 None

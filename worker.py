@@ -478,4 +478,8 @@ if __name__ == "__main__":
         import tkinter.messagebox as mb
         mb.showwarning("mangaGo Worker", "Worker 已在运行中")
         sys.exit(0)
-    WorkerApp()
+    try:
+        WorkerApp()
+    except Exception as e:
+        import traceback, tkinter.messagebox as mb
+        mb.showerror("Worker 启动失败", traceback.format_exc())
