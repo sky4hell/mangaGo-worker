@@ -287,6 +287,7 @@ class WorkerApp:
             return
         # 漫画名 = 选中的文件夹名
         comic_name = os.path.basename(folder)
+        self.import_path.set(folder)
         dest_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                  'manga-image-translator', 'downloads')
         def do_import():
@@ -310,6 +311,22 @@ class WorkerApp:
                 text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
         self.import_status.config(text="导入中...", foreground="blue")
         threading.Thread(target=do_import, daemon=True).start()
+
+    def _clear_import(self):
+        """清空导入的图片"""
+        folder = self.import_path.get()
+        if not folder:
+            return
+        comic_name = os.path.basename(folder)
+        dest = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            'manga-image-translator', 'downloads', comic_name)
+        if os.path.exists(dest):
+            try:
+                shutil.rmtree(dest)
+            except Exception:
+                pass
+        self.import_path.set("")
+        self.import_status.config(text="已清空", foreground="gray")
 
     def _setup_login(self):
         for w in self.root.winfo_children():
@@ -393,11 +410,16 @@ class WorkerApp:
         ttk.Label(frame, text="修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
         ttk.Label(frame, text="错误: 0", foreground="red").grid(row=0, column=2, padx=10)
         self.stats_frame = frame
-        btn_frame = ttk.Frame(self.root)
-        btn_frame.pack(pady=5)
-        ttk.Button(btn_frame, text="导入图片", command=self._import_images).pack(side="left", padx=5)
-        self.import_status = ttk.Label(btn_frame, text="", foreground="gray")
-        self.import_status.pack(side="left", padx=5)
+        import_frame = ttk.LabelFrame(self.root, text="本地图片")
+        import_frame.pack(fill="x", padx=10, pady=5)
+        row = ttk.Frame(import_frame)
+        row.pack(fill="x", padx=5, pady=5)
+        self.import_path = tk.StringVar()
+        ttk.Entry(row, textvariable=self.import_path, state="readonly").pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ttk.Button(row, text="浏览", command=self._import_images, width=6).pack(side="left", padx=2)
+        ttk.Button(row, text="清空", command=self._clear_import, width=6).pack(side="left", padx=2)
+        self.import_status = ttk.Label(import_frame, text="", foreground="gray")
+        self.import_status.pack(anchor="w", padx=5)
         self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
         self.translator_status.pack(pady=5)
         # 错误列表
