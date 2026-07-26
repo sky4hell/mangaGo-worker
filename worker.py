@@ -469,6 +469,23 @@ class WorkerApp:
         self.update_status("空闲中")
         threading.Thread(target=worker_loop, args=(self.update_status,), daemon=True).start()
         threading.Thread(target=self._stats_updater, daemon=True).start()
+        threading.Thread(target=self._translator_watchdog, daemon=True).start()
+
+    def _translator_watchdog(self):
+        """后台监控翻译服务健康，挂了自动重启"""
+        import urllib.request
+        while _running:
+            time.sleep(30)
+            try:
+                r = urllib.request.urlopen("http://localhost:8001/docs", timeout=5)
+                if r.status != 200:
+                    raise Exception(f"status {r.status}")
+            except Exception as e:
+                _log(f"watchdog: translator down ({e}), restarting...")
+                self._update_translator_status("翻译服务异常，重启中...", "orange")
+                self._start_translator()
+                time.sleep(10)
+                self._update_translator_status("翻译服务已就绪", "green")
 
     def update_status(self, msg):
         self.root.after(0, lambda: self.status_label.config(text=msg))
