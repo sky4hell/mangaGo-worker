@@ -269,6 +269,7 @@ def worker_loop(status_callback):
         except requests.ConnectionError:
             status_callback("连接失败，重试中...")
         except Exception as e:
+            _log(f"WORKER ERROR: {e}")
             status_callback(f"错误: {str(e)[:50]}")
             _stats["errors"] += 1
 
