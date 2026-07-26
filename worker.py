@@ -386,7 +386,7 @@ class WorkerApp:
         for w in self.root.winfo_children():
             w.destroy()
         self.root.title("mangaGo Worker — 已连接")
-        self.root.geometry("420x350")
+        self.root.geometry("420x480")
         ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=10)
         self.status_label = ttk.Label(self.root, text="就绪", font=("", 11))
         self.status_label.pack()
