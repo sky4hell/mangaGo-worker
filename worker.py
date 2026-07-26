@@ -94,8 +94,11 @@ def _get_image_bytes(local_path):
     if _LOCAL_DOWNLOADS and local_path:
         fp = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
         if os.path.exists(fp):
+            _log(f'local_hit: {local_path[:50]}')
             with open(fp, 'rb') as f:
                 return f.read()
+        else:
+            _log(f'local_miss: {local_path[:50]}')
     r = requests.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
     r.raise_for_status()
     # 下载后存本地，下次直接读盘
