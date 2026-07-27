@@ -29,6 +29,7 @@ LOCAL_TRANSLATOR = "http://localhost:8001"
 TRANSLATOR_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                   'manga-image-translator', 'server', 'main.py')
 POLL_INTERVAL = 5  # 轮询间隔（秒）
+TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'token.txt')
 
 # ====== 全局状态 ======
 _token = None
@@ -36,18 +37,21 @@ _user_info = None
 _running = False
 _stats = {"ocr": 0, "retouch": 0, "errors": 0}
 _error_log = []  # [(time, imageId, error_msg)]
+_lock = threading.Lock()
+_api_session = requests.Session()
+_local_session = requests.Session()
 
 
 def api_post(path, data=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
-    r = requests.post(f"{API_BASE}{path}", json=data, headers=headers, timeout=30)
+    r = _api_session.post(f"{API_BASE}{path}", json=data, headers=headers, timeout=30)
     return r.json()
 
 
 def api_get(path, params=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
     _log(f'api_get {path} token_len={len(_token) if _token else 0}')
-    r = requests.get(f"{API_BASE}{path}", params=params, headers=headers, timeout=30)
+    r = _api_session.get(f"{API_BASE}{path}", params=params, headers=headers, timeout=30)
     return r.json()
 
 
@@ -74,7 +78,8 @@ def _build_render_metadata(ocr_metadata_str, translated_str):
         trans_list = json.loads(translated_str)
         if isinstance(trans_list, str):
             trans_list = [trans_list]
-    except Exception:
+    except Exception as e:
+        _log(f'_build_render_metadata error: {e}')
         return {"image_0": {"blocks": []}}
     for j, b in enumerate(blocks):
         if j < len(trans_list):
@@ -91,23 +96,25 @@ _LOCAL_DOWNLOADS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 def _get_image_bytes(local_path):
     """优先本地文件，没有则云端下载"""
+    fp = None
     if _LOCAL_DOWNLOADS and local_path:
         fp = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
         if os.path.exists(fp):
             _log(f'local_hit: {local_path[:50]}')
-            with open(fp, 'rb') as f:
-                return f.read()
+            with open(fp, 'rb') as fh:
+                return fh.read()
         else:
             _log(f'local_miss: {local_path[:50]}')
-    r = requests.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
+    r = _api_session.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
     r.raise_for_status()
     # 下载后存本地，下次直接读盘
-    try:
-        os.makedirs(os.path.dirname(fp), exist_ok=True)
-        with open(fp, 'wb') as f:
-            f.write(r.content)
-    except Exception:
-        pass
+    if fp:
+        try:
+            os.makedirs(os.path.dirname(fp), exist_ok=True)
+            with open(fp, 'wb') as fh:
+                fh.write(r.content)
+        except Exception as e:
+            _log(f'local_cache_write_error: {e}')
     return r.content
 
 
@@ -131,7 +138,7 @@ def process_ocr_task(task):
         "detector": {"detection_size": 2048, "text_threshold": 0.2, "box_threshold": 0.4}
     })
     try:
-        r = requests.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
+        r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
                           files=files,
                           data={"config": config, "save_to_db": "false"},
                           timeout=300)
@@ -167,7 +174,7 @@ def process_retouch_task(task):
     metadata_dict = _build_render_metadata(ocr_meta, translated)
     config = '{"render": {"font_scale_factor": 0.65}}'
     try:
-        r = requests.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
+        r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
                           files=files,
                           data={"config": config, "ocr_metadata": json.dumps(metadata_dict)},
                           timeout=300)
@@ -184,26 +191,47 @@ def process_retouch_task(task):
         return {"imageId": task["imageId"], "outputImage": "", "error": str(e)}
 
 
-def worker_loop(parent):
-    """后台工作线程"""
-    status_callback = parent.update_status
+def _handle_token_expired(data, parent):
+    """检测 401 过期，停止循环、清 token、回登录页"""
+    global _running, _token
+    if data.get("code") != 401:
+        return False
+    if not _running:
+        return True  # 另一个循环已处理
+    _log('token expired, returning to login')
+    _running = False
+    _token = None
+    try:
+        os.remove(TOKEN_FILE)
+    except Exception as e:
+        _log(f'token_expired remove file error: {e}')
+    parent.root.after(0, parent._setup_login)
+    return True
+
+
+def ocr_loop(parent):
+    """OCR 轮询线程"""
     global _running, _stats
-    last_task_time = time.time()
 
     while _running:
+        has_task = False
         try:
-            # 轮询 OCR 任务
             data = api_get("/worker/poll", {"type": "ocr"})
+            if _handle_token_expired(data, parent):
+                break
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
             _log(f'poll ocr: code={data.get("code")} task={bool(task)} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
+                has_task = True
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
+                parent.root.after(0, lambda tid=task['taskId'], t=total:
+                    parent._show_ocr_row(tid, t))
                 for idx, img in enumerate(pending):
                     try:
-                        parent.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
-                            parent.task_label.config(text=f"{tid}  OCR {p}/{t}"))
+                        parent.root.after(0, lambda p=processed+idx+1, t=total:
+                            parent._update_ocr_row(p, t))
                         r = process_ocr_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -213,34 +241,63 @@ def worker_loop(parent):
                             "ocrMetadata": r.get("ocrMetadata")
                         })
                         if err:
+                            with _lock:
+                                _stats["errors"] += 1
+                                _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                                if len(_error_log) > 50:
+                                    _error_log.pop()
+                        else:
+                            with _lock:
+                                _stats["ocr"] += 1
+                    except Exception as e:
+                        with _lock:
                             _stats["errors"] += 1
-                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
                             if len(_error_log) > 50:
                                 _error_log.pop()
-                        else:
-                            _stats["ocr"] += 1
-                    except Exception as e:
-                        _stats["errors"] += 1
-                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
                         _log(f'OCR ERROR img#{img.get("imageId")}: {e}')
                         try:
                             api_post("/worker/submit", {"taskId": task["taskId"], "type": "ocr",
                                 "imageId": img["imageId"], "ocrText": "", "ocrMetadata": ""})
-                        except Exception:
-                            pass
-                last_task_time = time.time()
+                        except Exception as se:
+                            _log(f'OCR fallback submit error: {se}')
 
-            # 轮询修图任务
+            else:
+                parent.root.after(0, parent._hide_ocr_row)
+        except requests.ConnectionError:
+            parent.update_status("连接失败，重试中...")
+        except Exception as e:
+            _log(f"OCR_LOOP ERROR: {e}")
+            with _lock:
+                _stats["errors"] += 1
+
+        if not has_task:
+            time.sleep(POLL_INTERVAL)
+
+
+def retouch_loop(parent):
+    """修图轮询线程"""
+    global _running, _stats
+
+    while _running:
+        has_task = False
+        try:
             data = api_get("/worker/poll", {"type": "retouch"})
+            if _handle_token_expired(data, parent):
+                break
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
+            _log(f'poll retouch: code={data.get("code")} task={bool(task)} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
+                has_task = True
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
+                parent.root.after(0, lambda tid=task['taskId'], t=total:
+                    parent._show_retouch_row(tid, t))
                 for idx, img in enumerate(pending):
                     try:
-                        parent.root.after(0, lambda p=processed+idx+1, t=total, tid=task['taskId']:
-                            parent.task_label.config(text=f"{tid}  修图 {p}/{t}"))
+                        parent.root.after(0, lambda p=processed+idx+1, t=total:
+                            parent._update_retouch_row(p, t))
                         r = process_retouch_task(img)
                         err = r.get("error", "")
                         api_post("/worker/submit", {
@@ -249,32 +306,38 @@ def worker_loop(parent):
                             "outputImage": r.get("outputImage", "")
                         })
                         if err:
-                            _stats["errors"] += 1
-                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                            with _lock:
+                                _stats["errors"] += 1
+                                _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
+                                if len(_error_log) > 50:
+                                    _error_log.pop()
                         else:
-                            _stats["retouch"] += 1
+                            with _lock:
+                                _stats["retouch"] += 1
                     except Exception as e:
-                        _stats["errors"] += 1
-                        _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                        with _lock:
+                            _stats["errors"] += 1
+                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
+                            if len(_error_log) > 50:
+                                _error_log.pop()
                         _log(f'RETOUCH ERROR img#{img.get("imageId")}: {e}')
                         try:
                             api_post("/worker/submit", {"taskId": task["taskId"], "type": "retouch",
                                 "imageId": img["imageId"], "outputImage": ""})
-                        except Exception:
-                            pass
-                last_task_time = time.time()
+                        except Exception as se:
+                            _log(f'RETOUCH fallback submit error: {se}')
 
-            if time.time() - last_task_time > 10:
-                status_callback("空闲中")
-                parent.root.after(0, lambda: parent.task_label.config(text=""))
+            else:
+                parent.root.after(0, parent._hide_retouch_row)
         except requests.ConnectionError:
-            status_callback("连接失败，重试中...")
+            parent.update_status("连接失败，重试中...")
         except Exception as e:
-            _log(f"WORKER ERROR: {e}")
-            status_callback(f"错误: {str(e)[:50]}")
-            _stats["errors"] += 1
+            _log(f"RETOUCH_LOOP ERROR: {e}")
+            with _lock:
+                _stats["errors"] += 1
 
-        time.sleep(POLL_INTERVAL)
+        if not has_task:
+            time.sleep(POLL_INTERVAL)
 
 
 # ====== GUI ======
@@ -313,7 +376,8 @@ class WorkerApp:
                             os.makedirs(os.path.dirname(dst), exist_ok=True)
                             shutil.copy2(src, dst)
                             copied += 1
-                        except Exception:
+                        except Exception as e:
+                            _log(f'import_copy_error: {src} → {dst}: {e}')
                             errors += 1
             self.root.after(0, lambda: self.import_status.config(
                 text=f"已导入 {copied} 张" + (f"，{errors} 失败" if errors else ""), foreground="green" if not errors else "orange"))
@@ -331,8 +395,8 @@ class WorkerApp:
         if os.path.exists(dest):
             try:
                 shutil.rmtree(dest)
-            except Exception:
-                pass
+            except Exception as e:
+                _log(f'clear_import_error: {e}')
         self.import_path.set("")
         self.import_status.config(text="已清空", foreground="gray")
 
@@ -352,20 +416,18 @@ class WorkerApp:
     def _try_cached_token(self):
         global _token, _user_info
         try:
-            with open('token.txt', 'r') as f:
+            with open(TOKEN_FILE, 'r') as f:
                 tk = f.read().strip()
             if tk:
-                import urllib.request
-                req = urllib.request.Request(f"{API_BASE}/worker/poll?type=ocr",
-                    headers={"Authorization": f"Bearer {tk}"})
-                r = urllib.request.urlopen(req, timeout=10)
-                data = json.loads(r.read())
+                r = requests.get(f"{API_BASE}/worker/poll", params={"type": "ocr"},
+                    headers={"Authorization": f"Bearer {tk}"}, timeout=10)
+                data = r.json()
                 if data.get('code') != 401:
                     _token = tk
                     self.root.after(0, self._setup_main)
                     return
-        except Exception:
-            pass
+        except Exception as e:
+            _log(f'cached_token: {e}')
         self.root.after(0, lambda: self.login_status.config(text="请登录"))
 
     def _start_web_login(self):
@@ -383,19 +445,20 @@ class WorkerApp:
             for i in range(120):
                 time.sleep(2)
                 try:
-                    req = urllib.request.Request(f"{API_BASE}/worker/token?id={worker_id}",
-                        headers={'User-Agent': 'mangaGo-Worker/1.0'})
-                    r = urllib.request.urlopen(req, timeout=10)
-                    data = json.loads(r.read())
+                    r = requests.get(f"{API_BASE}/worker/token",
+                        params={"id": worker_id},
+                        headers={'User-Agent': 'mangaGo-Worker/1.0'},
+                        timeout=10)
+                    data = r.json()
                     tk = (data.get('data') or {}).get('token')
                     if tk:
                         _log(f'poll_token: got token len={len(tk)}')
                         _token = tk
                         try:
-                            with open('token.txt', 'w') as f:
+                            with open(TOKEN_FILE, 'w') as f:
                                 f.write(tk)
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            _log(f'poll_token write error: {e}')
                         parent.root.after(0, parent._setup_main)
                         return
                 except Exception as e:
@@ -404,42 +467,134 @@ class WorkerApp:
             self.root.after(0, lambda: parent.login_btn.config(state="normal"))
         threading.Thread(target=poll_token, daemon=True).start()
 
+    def _open_downloads(self):
+        """打开 downloads 目录"""
+        downloads = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                 'manga-image-translator', 'downloads')
+        os.makedirs(downloads, exist_ok=True)
+        os.startfile(downloads)
+
+    def _show_ocr_row(self, task_id, total):
+        self.ocr_task_id_label.config(text=task_id[:12])
+        self.ocr_progress_bar.config(maximum=total, value=0)
+        self.ocr_progress_text.config(text=f"0/{total}")
+        self.update_status("处理中")
+        if not self.ocr_row_visible:
+            self.ocr_row.pack(fill="x", padx=5, pady=2)
+            self.ocr_row_visible = True
+            if not self.task_card_visible:
+                self.task_card.pack(fill="x", padx=10, pady=(5, 0))
+                self.task_card_visible = True
+
+    def _update_ocr_row(self, current, total):
+        self.ocr_progress_bar.config(value=current)
+        self.ocr_progress_text.config(text=f"{current}/{total}")
+
+    def _hide_ocr_row(self):
+        if self.ocr_row_visible:
+            self.ocr_row.pack_forget()
+            self.ocr_row_visible = False
+            if not self.retouch_row_visible:
+                self.task_card.pack_forget()
+                self.task_card_visible = False
+                self.update_status("空闲中")
+
+    def _show_retouch_row(self, task_id, total):
+        self.retouch_task_id_label.config(text=task_id[:12])
+        self.retouch_progress_bar.config(maximum=total, value=0)
+        self.retouch_progress_text.config(text=f"0/{total}")
+        self.update_status("处理中")
+        if not self.retouch_row_visible:
+            self.retouch_row.pack(fill="x", padx=5, pady=2)
+            self.retouch_row_visible = True
+            if not self.task_card_visible:
+                self.task_card.pack(fill="x", padx=10, pady=(5, 0))
+                self.task_card_visible = True
+
+    def _update_retouch_row(self, current, total):
+        self.retouch_progress_bar.config(value=current)
+        self.retouch_progress_text.config(text=f"{current}/{total}")
+
+    def _hide_retouch_row(self):
+        if self.retouch_row_visible:
+            self.retouch_row.pack_forget()
+            self.retouch_row_visible = False
+            if not self.ocr_row_visible:
+                self.task_card.pack_forget()
+                self.task_card_visible = False
+                self.update_status("空闲中")
+
     def _setup_main(self):
         for w in self.root.winfo_children():
             w.destroy()
-        self.root.title("mangaGo Worker — 已连接")
-        self.root.geometry("420x480")
-        ttk.Label(self.root, text="mangaGo Worker", font=("", 18, "bold")).pack(pady=10)
-        self.status_label = ttk.Label(self.root, text="就绪", font=("", 11))
-        self.status_label.pack()
-        frame = ttk.Frame(self.root)
-        frame.pack(pady=15)
-        ttk.Label(frame, text="OCR 处理: 0", font=("", 10)).grid(row=0, column=0, padx=10)
-        ttk.Label(frame, text="修图处理: 0", font=("", 10)).grid(row=0, column=1, padx=10)
-        ttk.Label(frame, text="错误: 0", foreground="red").grid(row=0, column=2, padx=10)
-        self.stats_frame = frame
-        self.task_label = ttk.Label(self.root, text="", font=("", 10), foreground="#409eff")
-        self.task_label.pack(pady=3)
-        import_frame = ttk.LabelFrame(self.root, text="本地图片")
-        import_frame.pack(fill="x", padx=10, pady=5)
-        row = ttk.Frame(import_frame)
+        self.root.title("mangaGo Worker")
+        self.root.geometry("500x450")
+        self.root.minsize(420, 380)
+        self.root.resizable(True, True)
+
+        # ====== 顶部标题栏 ======
+        top_bar = tk.Frame(self.root, bg="#303133", height=36)
+        top_bar.pack(fill="x")
+        top_bar.pack_propagate(False)
+        tk.Label(top_bar, text="  mangaGo Worker", bg="#303133", fg="white",
+                 font=("", 12, "bold")).pack(side="left")
+        self.top_status = tk.Label(top_bar, text="就绪  ", bg="#303133", fg="#c0c4cc",
+                                   font=("", 10))
+        self.top_status.pack(side="right")
+
+        # ====== 本地服务状态条 ======
+        self.service_bar = tk.Label(self.root, text="本地服务启动中...",
+                                    bg="#409eff", fg="white", font=("", 10),
+                                    anchor="center", pady=3)
+        self.service_bar.pack(fill="x", padx=10, pady=(4, 0))
+
+        # ====== 本地图片卡片 ======
+        import_card = ttk.LabelFrame(self.root, text="本地图片")
+        import_card.pack(fill="x", padx=10, pady=(8, 0))
+        row = ttk.Frame(import_card)
         row.pack(fill="x", padx=5, pady=5)
         self.import_path = tk.StringVar()
-        ttk.Entry(row, textvariable=self.import_path, state="readonly").pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ttk.Entry(row, textvariable=self.import_path, state="readonly").pack(
+            side="left", fill="x", expand=True, padx=(0, 5))
         ttk.Button(row, text="浏览", command=self._import_images, width=6).pack(side="left", padx=2)
         ttk.Button(row, text="清空", command=self._clear_import, width=6).pack(side="left", padx=2)
-        self.import_status = ttk.Label(import_frame, text="", foreground="gray")
-        self.import_status.pack(anchor="w", padx=5)
-        self.translator_status = ttk.Label(self.root, text="翻译服务启动中...", font=("", 9), foreground="blue")
-        self.translator_status.pack(pady=5)
-        # 错误列表
-        err_frame = ttk.LabelFrame(self.root, text="处理日志（最近50条）")
+        ttk.Button(row, text="📂", command=self._open_downloads, width=4).pack(side="left", padx=2)
+        self.import_status = ttk.Label(import_card, text="", foreground="gray")
+        self.import_status.pack(anchor="w", padx=5, pady=(0, 5))
+
+        # ====== 任务卡片（初始隐藏） ======
+        self.task_card = ttk.LabelFrame(self.root, text="任务")
+        self.task_card_visible = False
+
+        self.ocr_row = ttk.Frame(self.task_card)
+        ttk.Label(self.ocr_row, text="OCR", font=("", 10), width=6).pack(side="left")
+        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="", foreground="gray", font=("", 9))
+        self.ocr_task_id_label.pack(side="left", padx=5)
+        self.ocr_progress_text = ttk.Label(self.ocr_row, text="0/0", width=8)
+        self.ocr_progress_text.pack(side="right")
+        self.ocr_progress_bar = ttk.Progressbar(self.ocr_row, mode="determinate", length=160)
+        self.ocr_progress_bar.pack(side="right", padx=5)
+        self.ocr_row_visible = False
+
+        self.retouch_row = ttk.Frame(self.task_card)
+        ttk.Label(self.retouch_row, text="修图", font=("", 10), width=6).pack(side="left")
+        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="", foreground="gray", font=("", 9))
+        self.retouch_task_id_label.pack(side="left", padx=5)
+        self.retouch_progress_text = ttk.Label(self.retouch_row, text="0/0", width=8)
+        self.retouch_progress_text.pack(side="right")
+        self.retouch_progress_bar = ttk.Progressbar(self.retouch_row, mode="determinate", length=160)
+        self.retouch_progress_bar.pack(side="right", padx=5)
+        self.retouch_row_visible = False
+
+        # ====== 错误日志卡片 ======
+        err_frame = ttk.LabelFrame(self.root, text="错误日志（最近50条）")
         err_frame.pack(fill="both", expand=True, padx=10, pady=5)
         self.error_text = tk.Text(err_frame, height=6, font=("Consolas", 8), state="disabled", wrap="word")
         scrollbar = ttk.Scrollbar(err_frame, command=self.error_text.yview)
         self.error_text.configure(yscrollcommand=scrollbar.set)
         self.error_text.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
         threading.Thread(target=self._auto_start, daemon=True).start()
 
     def _start_translator(self):
@@ -451,35 +606,41 @@ class WorkerApp:
         p = subprocess.Popen([venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
 
-    def _update_translator_status(self, text, color="blue"):
-        self.root.after(0, lambda: self.translator_status.config(text=text, foreground=color))
+    def _update_translator_status(self, text, color="#409eff"):
+        self.root.after(0, lambda: self.service_bar.config(text=text, bg=color))
 
     def _auto_start(self):
         _log('auto_start: begin')
-        self._update_translator_status("翻译服务启动中...")
+        self._update_translator_status("本地服务启动中...")
         self._start_translator()
-        import time
+        translator_ready = False
         for i in range(30):
             time.sleep(2)
             try:
                 import urllib.request
                 urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
                 _log(f'auto_start: translator ready at {i*2}s')
-                self._update_translator_status("翻译服务已就绪", "green")
+                self._update_translator_status("本地服务已就绪", "#67c23a")
+                translator_ready = True
                 break
             except Exception as e:
                 _log(f'auto_start: wait {i*2}s err={e}')
-                self._update_translator_status(f"等待翻译服务 ({i*2}s)...", "orange")
+                self._update_translator_status(f"等待本地服务 ({i*2}s)...", "#e6a23c")
+        if not translator_ready:
+            self._update_translator_status("本地服务启动失败，请检查翻译环境", "#f56c6c")
+            _log('auto_start: translator failed to start after 60s')
+            return
         global _running
         _running = True
-        _log('auto_start: done, starting worker_loop')
+        _log('auto_start: done, starting ocr_loop + retouch_loop')
         self.update_status("空闲中")
-        threading.Thread(target=worker_loop, args=(self,), daemon=True).start()
-        threading.Thread(target=self._stats_updater, daemon=True).start()
+        threading.Thread(target=ocr_loop, args=(self,), daemon=True).start()
+        threading.Thread(target=retouch_loop, args=(self,), daemon=True).start()
+        threading.Thread(target=self._log_updater, daemon=True).start()
         threading.Thread(target=self._translator_watchdog, daemon=True).start()
 
     def _translator_watchdog(self):
-        """后台监控翻译服务健康，挂了自动重启"""
+        """后台监控本地服务健康，挂了自动重启"""
         import urllib.request
         while _running:
             time.sleep(30)
@@ -489,33 +650,27 @@ class WorkerApp:
                     raise Exception(f"status {r.status}")
             except Exception as e:
                 _log(f"watchdog: translator down ({e}), restarting...")
-                self._update_translator_status("翻译服务异常，重启中...", "orange")
+                self._update_translator_status("本地服务异常，重启中...", "#e6a23c")
                 self._start_translator()
                 time.sleep(10)
-                self._update_translator_status("翻译服务已就绪", "green")
+                self._update_translator_status("本地服务已就绪", "#67c23a")
 
     def update_status(self, msg):
-        self.root.after(0, lambda: self.status_label.config(text=msg))
+        self.root.after(0, lambda: self.top_status.config(text=msg + "  "))
 
-    def _stats_updater(self):
+    def _log_updater(self):
         while _running:
-            self.root.after(0, self._refresh_stats)
+            self.root.after(0, self._refresh_errors)
             time.sleep(3)
-
-    def _refresh_stats(self):
-        for w in self.stats_frame.winfo_children():
-            w.destroy()
-        ttk.Label(self.stats_frame, text=f"OCR: {_stats['ocr']}", font=("", 10)).grid(row=0, column=0, padx=10)
-        ttk.Label(self.stats_frame, text=f"修图: {_stats['retouch']}", font=("", 10)).grid(row=0, column=1, padx=10)
-        ttk.Label(self.stats_frame, text=f"错误: {_stats['errors']}", foreground="red").grid(row=0, column=2, padx=10)
-        self._refresh_errors()
 
     def _refresh_errors(self):
         if not self.error_text:
             return
+        with _lock:
+            snapshot = list(_error_log[:20])
         self.error_text.configure(state="normal")
         self.error_text.delete(1.0, "end")
-        for t, iid, err in _error_log[:20]:
+        for t, iid, err in snapshot:
             self.error_text.insert("end", f"[{t}] img#{iid} {err[:80]}\n")
         self.error_text.configure(state="disabled")
 
