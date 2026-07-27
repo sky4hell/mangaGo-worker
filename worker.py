@@ -40,19 +40,28 @@ _error_log = []  # [(time, imageId, error_msg)]
 _lock = threading.Lock()
 _api_session = requests.Session()
 _local_session = requests.Session()
+_local_session.trust_env = False
 
 
 def api_post(path, data=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
     r = _api_session.post(f"{API_BASE}{path}", json=data, headers=headers, timeout=30)
-    return r.json()
+    try:
+        return r.json()
+    except Exception as e:
+        _log(f'api_post JSON error: {e} status={r.status_code}')
+        return {"code": -1, "message": str(e)}
 
 
 def api_get(path, params=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
     _log(f'api_get {path} token_len={len(_token) if _token else 0}')
     r = _api_session.get(f"{API_BASE}{path}", params=params, headers=headers, timeout=30)
-    return r.json()
+    try:
+        return r.json()
+    except Exception as e:
+        _log(f'api_get JSON error: {e} status={r.status_code}')
+        return {"code": -1, "message": str(e)}
 
 
 def do_login(username, password):
