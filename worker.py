@@ -67,12 +67,12 @@ def api_get(path, params=None):
 def do_login(username, password):
     global _token, _user_info
     try:
-        r = requests.post(f"{API_BASE}/sysUser/login", json={
+        r = requests.post(f"{API_BASE}/auth/login", json={
             "adminAccount": username, "password": password
         }, timeout=15)
         data = r.json()
         if data.get("code") == 200:
-            _token = data.get("data", {}).get("tokens", {}).get("long_token", {}).get("token")
+            _token = data.get("data", {}).get("tokens", {}).get("access_token", {}).get("token")
             _user_info = data.get("data", {})
             return True, ""
         return False, data.get("message", "登录失败")
@@ -218,9 +218,20 @@ def _handle_token_expired(data, parent):
     return True
 
 
+def api_submit_batch(task_id, task_type, results):
+    """批量提交处理结果"""
+    return api_post("/worker/submitBatch", {
+        "taskId": task_id,
+        "type": task_type,
+        "results": results
+    })
+
+
 def ocr_loop(parent):
-    """OCR 轮询线程"""
+    """OCR 轮询线程 — 3并发 + 批量提交"""
     global _running, _stats
+    OCR_WORKERS = 3
+    from concurrent.futures import ThreadPoolExecutor, as_completed
 
     while _running:
         has_task = False
@@ -235,41 +246,50 @@ def ocr_loop(parent):
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
-                parent.root.after(0, lambda tid=task['taskId'], t=total:
+                task_id = task["taskId"]
+                parent.root.after(0, lambda tid=task_id, t=total:
                     parent._show_ocr_row(tid, t))
-                for idx, img in enumerate(pending):
-                    try:
-                        parent.root.after(0, lambda p=processed+idx+1, t=total:
+
+                pool = ThreadPoolExecutor(max_workers=OCR_WORKERS)
+                try:
+                    for i in range(0, len(pending), OCR_WORKERS):
+                        batch = pending[i:i + OCR_WORKERS]
+
+                        # 并发 OCR（_get_image_bytes 内部已处理本地缓存+下载）
+                        futures = {pool.submit(process_ocr_task, img): img for img in batch}
+                        results = []
+                        for f in as_completed(futures):
+                            try:
+                                results.append(f.result())
+                            except Exception as e:
+                                img = futures[f]
+                                results.append({
+                                    "imageId": img["imageId"], "ocrText": "", "ocrMetadata": None,
+                                    "error": str(e)
+                                })
+
+                        # 批量提交
+                        api_submit_batch(task_id, "ocr", results)
+
+                        # 更新统计
+                        for r in results:
+                            err = r.get("error", "")
+                            if err:
+                                with _lock:
+                                    _stats["errors"] += 1
+                                    _error_log.insert(0, (time.strftime("%H:%M:%S"), r["imageId"], err))
+                                    if len(_error_log) > 50:
+                                        _error_log.pop()
+                            else:
+                                with _lock:
+                                    _stats["ocr"] += 1
+
+                        # 更新 GUI 进度
+                        done = processed + i + len(batch)
+                        parent.root.after(0, lambda p=done, t=total:
                             parent._update_ocr_row(p, t))
-                        r = process_ocr_task(img)
-                        err = r.get("error", "")
-                        api_post("/worker/submit", {
-                            "taskId": task["taskId"], "type": "ocr",
-                            "imageId": img["imageId"],
-                            "ocrText": r.get("ocrText", ""),
-                            "ocrMetadata": r.get("ocrMetadata")
-                        })
-                        if err:
-                            with _lock:
-                                _stats["errors"] += 1
-                                _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
-                                if len(_error_log) > 50:
-                                    _error_log.pop()
-                        else:
-                            with _lock:
-                                _stats["ocr"] += 1
-                    except Exception as e:
-                        with _lock:
-                            _stats["errors"] += 1
-                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
-                            if len(_error_log) > 50:
-                                _error_log.pop()
-                        _log(f'OCR ERROR img#{img.get("imageId")}: {e}')
-                        try:
-                            api_post("/worker/submit", {"taskId": task["taskId"], "type": "ocr",
-                                "imageId": img["imageId"], "ocrText": "", "ocrMetadata": ""})
-                        except Exception as se:
-                            _log(f'OCR fallback submit error: {se}')
+                finally:
+                    pool.shutdown()
 
             else:
                 parent.root.after(0, parent._hide_ocr_row)
@@ -285,8 +305,10 @@ def ocr_loop(parent):
 
 
 def retouch_loop(parent):
-    """修图轮询线程"""
+    """修图轮询线程 — 2并发 + 批量提交"""
     global _running, _stats
+    RETOUCH_WORKERS = 2
+    from concurrent.futures import ThreadPoolExecutor, as_completed
 
     while _running:
         has_task = False
@@ -301,40 +323,50 @@ def retouch_loop(parent):
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
                 processed = task.get("completedCount", 0) + task.get("failedCount", 0)
-                parent.root.after(0, lambda tid=task['taskId'], t=total:
+                task_id = task["taskId"]
+                parent.root.after(0, lambda tid=task_id, t=total:
                     parent._show_retouch_row(tid, t))
-                for idx, img in enumerate(pending):
-                    try:
-                        parent.root.after(0, lambda p=processed+idx+1, t=total:
+
+                pool = ThreadPoolExecutor(max_workers=RETOUCH_WORKERS)
+                try:
+                    for i in range(0, len(pending), RETOUCH_WORKERS):
+                        batch = pending[i:i + RETOUCH_WORKERS]
+
+                        # 并发修图
+                        futures = {pool.submit(process_retouch_task, img): img for img in batch}
+                        results = []
+                        for f in as_completed(futures):
+                            try:
+                                results.append(f.result())
+                            except Exception as e:
+                                img = futures[f]
+                                results.append({
+                                    "imageId": img["imageId"], "outputImage": "",
+                                    "error": str(e)
+                                })
+
+                        # 批量提交
+                        api_submit_batch(task_id, "retouch", results)
+
+                        # 更新统计
+                        for r in results:
+                            err = r.get("error", "")
+                            if err:
+                                with _lock:
+                                    _stats["errors"] += 1
+                                    _error_log.insert(0, (time.strftime("%H:%M:%S"), r["imageId"], err))
+                                    if len(_error_log) > 50:
+                                        _error_log.pop()
+                            else:
+                                with _lock:
+                                    _stats["retouch"] += 1
+
+                        # 更新 GUI 进度
+                        done = processed + i + len(batch)
+                        parent.root.after(0, lambda p=done, t=total:
                             parent._update_retouch_row(p, t))
-                        r = process_retouch_task(img)
-                        err = r.get("error", "")
-                        api_post("/worker/submit", {
-                            "taskId": task["taskId"], "type": "retouch",
-                            "imageId": img["imageId"],
-                            "outputImage": r.get("outputImage", "")
-                        })
-                        if err:
-                            with _lock:
-                                _stats["errors"] += 1
-                                _error_log.insert(0, (time.strftime("%H:%M:%S"), img["imageId"], err))
-                                if len(_error_log) > 50:
-                                    _error_log.pop()
-                        else:
-                            with _lock:
-                                _stats["retouch"] += 1
-                    except Exception as e:
-                        with _lock:
-                            _stats["errors"] += 1
-                            _error_log.insert(0, (time.strftime("%H:%M:%S"), img.get("imageId", "?"), str(e)[:80]))
-                            if len(_error_log) > 50:
-                                _error_log.pop()
-                        _log(f'RETOUCH ERROR img#{img.get("imageId")}: {e}')
-                        try:
-                            api_post("/worker/submit", {"taskId": task["taskId"], "type": "retouch",
-                                "imageId": img["imageId"], "outputImage": ""})
-                        except Exception as se:
-                            _log(f'RETOUCH fallback submit error: {se}')
+                finally:
+                    pool.shutdown()
 
             else:
                 parent.root.after(0, parent._hide_retouch_row)
