@@ -519,51 +519,39 @@ class WorkerApp:
         self.ocr_task_id_label.config(text=task_id[:12])
         self.ocr_progress_bar.config(maximum=total, value=0)
         self.ocr_progress_text.config(text=f"0/{total}")
+        self.ocr_row_visible = True
         self.update_status("处理中")
-        if not self.ocr_row_visible:
-            self.ocr_row.pack(fill="x", padx=5, pady=2)
-            self.ocr_row_visible = True
-            if not self.task_card_visible:
-                self.task_card.pack(fill="x", padx=10, pady=(5, 0))
-                self.task_card_visible = True
 
     def _update_ocr_row(self, current, total):
         self.ocr_progress_bar.config(value=current)
         self.ocr_progress_text.config(text=f"{current}/{total}")
 
     def _hide_ocr_row(self):
-        if self.ocr_row_visible:
-            self.ocr_row.pack_forget()
-            self.ocr_row_visible = False
-            if not self.retouch_row_visible:
-                self.task_card.pack_forget()
-                self.task_card_visible = False
-                self.update_status("空闲中")
+        self.ocr_task_id_label.config(text="--")
+        self.ocr_progress_bar.config(value=0)
+        self.ocr_progress_text.config(text="--")
+        self.ocr_row_visible = False
+        if not self.retouch_row_visible:
+            self.update_status("空闲中")
 
     def _show_retouch_row(self, task_id, total):
         self.retouch_task_id_label.config(text=task_id[:12])
         self.retouch_progress_bar.config(maximum=total, value=0)
         self.retouch_progress_text.config(text=f"0/{total}")
+        self.retouch_row_visible = True
         self.update_status("处理中")
-        if not self.retouch_row_visible:
-            self.retouch_row.pack(fill="x", padx=5, pady=2)
-            self.retouch_row_visible = True
-            if not self.task_card_visible:
-                self.task_card.pack(fill="x", padx=10, pady=(5, 0))
-                self.task_card_visible = True
 
     def _update_retouch_row(self, current, total):
         self.retouch_progress_bar.config(value=current)
         self.retouch_progress_text.config(text=f"{current}/{total}")
 
     def _hide_retouch_row(self):
-        if self.retouch_row_visible:
-            self.retouch_row.pack_forget()
-            self.retouch_row_visible = False
-            if not self.ocr_row_visible:
-                self.task_card.pack_forget()
-                self.task_card_visible = False
-                self.update_status("空闲中")
+        self.retouch_task_id_label.config(text="--")
+        self.retouch_progress_bar.config(value=0)
+        self.retouch_progress_text.config(text="--")
+        self.retouch_row_visible = False
+        if not self.ocr_row_visible:
+            self.update_status("空闲中")
 
     def _setup_main(self):
         for w in self.root.winfo_children():
@@ -603,29 +591,32 @@ class WorkerApp:
         self.import_status = ttk.Label(import_card, text="", foreground="gray")
         self.import_status.pack(anchor="w", padx=5, pady=(0, 5))
 
-        # ====== 任务卡片（初始隐藏） ======
+        # ====== 任务卡片 ======
         self.task_card = ttk.LabelFrame(self.root, text="任务")
-        self.task_card_visible = False
+        self.task_card.pack(fill="x", padx=10, pady=(4, 0))
+        self.task_card_visible = True
+        self.ocr_row_visible = False
+        self.retouch_row_visible = False
 
         self.ocr_row = ttk.Frame(self.task_card)
         ttk.Label(self.ocr_row, text="OCR", font=("", 10), width=6).pack(side="left")
-        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="", foreground="gray", font=("", 9))
+        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="--", foreground="gray", font=("", 9))
         self.ocr_task_id_label.pack(side="left", padx=5)
-        self.ocr_progress_text = ttk.Label(self.ocr_row, text="0/0", width=8)
+        self.ocr_progress_text = ttk.Label(self.ocr_row, text="--", width=8)
         self.ocr_progress_text.pack(side="right")
         self.ocr_progress_bar = ttk.Progressbar(self.ocr_row, mode="determinate", length=160)
         self.ocr_progress_bar.pack(side="right", padx=5)
-        self.ocr_row_visible = False
+        self.ocr_row.pack(fill="x", padx=5, pady=1)
 
         self.retouch_row = ttk.Frame(self.task_card)
         ttk.Label(self.retouch_row, text="修图", font=("", 10), width=6).pack(side="left")
-        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="", foreground="gray", font=("", 9))
+        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="--", foreground="gray", font=("", 9))
         self.retouch_task_id_label.pack(side="left", padx=5)
-        self.retouch_progress_text = ttk.Label(self.retouch_row, text="0/0", width=8)
+        self.retouch_progress_text = ttk.Label(self.retouch_row, text="--", width=8)
         self.retouch_progress_text.pack(side="right")
         self.retouch_progress_bar = ttk.Progressbar(self.retouch_row, mode="determinate", length=160)
         self.retouch_progress_bar.pack(side="right", padx=5)
-        self.retouch_row_visible = False
+        self.retouch_row.pack(fill="x", padx=5, pady=1)
 
         # ====== 错误日志卡片 ======
         err_frame = ttk.LabelFrame(self.root, text="错误日志（最近50条）")
