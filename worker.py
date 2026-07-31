@@ -539,7 +539,7 @@ class WorkerApp:
         os.startfile(downloads)
 
     def _show_ocr_row(self, task_id, total):
-        self.ocr_task_id_label.config(text=task_id[:12])
+        self.ocr_task_id_label.config(text=task_id)
         self.ocr_progress_bar.config(maximum=total, value=0)
         self.ocr_progress_text.config(text=f"0/{total}")
         self.ocr_row_visible = True
@@ -558,7 +558,7 @@ class WorkerApp:
             self.update_status("空闲中")
 
     def _show_retouch_row(self, task_id, total):
-        self.retouch_task_id_label.config(text=task_id[:12])
+        self.retouch_task_id_label.config(text=task_id)
         self.retouch_progress_bar.config(maximum=total, value=0)
         self.retouch_progress_text.config(text=f"0/{total}")
         self.retouch_row_visible = True
