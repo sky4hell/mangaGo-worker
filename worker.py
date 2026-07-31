@@ -580,8 +580,8 @@ class WorkerApp:
         for w in self.root.winfo_children():
             w.destroy()
         self.root.title("mangaGo Worker")
-        self.root.geometry("500x450")
-        self.root.minsize(420, 380)
+        self.root.geometry("620x450")
+        self.root.minsize(520, 380)
         self.root.resizable(True, True)
 
         # ====== 顶部标题栏 ======
@@ -623,7 +623,7 @@ class WorkerApp:
 
         self.ocr_row = ttk.Frame(self.task_card)
         ttk.Label(self.ocr_row, text="OCR", font=("", 10), width=6).pack(side="left")
-        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="--", foreground="gray", font=("", 9), width=22)
+        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="--", foreground="gray", font=("", 9), width=24)
         self.ocr_task_id_label.pack(side="left", padx=5)
         self.ocr_progress_text = ttk.Label(self.ocr_row, text="--", width=8)
         self.ocr_progress_text.pack(side="right")
@@ -633,7 +633,7 @@ class WorkerApp:
 
         self.retouch_row = ttk.Frame(self.task_card)
         ttk.Label(self.retouch_row, text="修图", font=("", 10), width=6).pack(side="left")
-        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="--", foreground="gray", font=("", 9), width=22)
+        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="--", foreground="gray", font=("", 9), width=24)
         self.retouch_task_id_label.pack(side="left", padx=5)
         self.retouch_progress_text = ttk.Label(self.retouch_row, text="--", width=8)
         self.retouch_progress_text.pack(side="right")
