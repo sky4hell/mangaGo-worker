@@ -188,7 +188,18 @@ def process_retouch_task(task):
     ocr_meta = task.get("ocrMetadata") or "[]"
     translated = task.get("correctedTranslatedText") or task.get("translatedText") or "[]"
     metadata_dict = _build_render_metadata(ocr_meta, translated)
-    config = '{"render": {"font_scale_factor": 0.65}}'
+    # 与本地 AOT 修图保持一致参数
+    config = json.dumps({
+        "render": {
+            "font_scale_factor": 3.0,
+            "line_spacing_ratio": 1.3,
+            "text_padding_ratio": 1.0,
+            "font_size_offset": 15,
+            "font_size": 100
+        },
+        "text_merge": {"enabled": True},
+        "mask_expand_ratio": 0.05
+    })
     try:
         r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
                           files=files,
