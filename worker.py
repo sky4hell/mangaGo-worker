@@ -12,6 +12,13 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import requests
 
+# comic-backend 路径，使 retouch_aot 能 import utils.local_lama
+_BACKEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'comic-backend')
+if _BACKEND_DIR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR)
+
+from retouch_aot import process_images_aot
+
 # ====== 日志 ======
 import logging
 logging.basicConfig(
@@ -87,24 +94,6 @@ def do_login(username, password):
         return False, str(e)
 
 
-def _build_render_metadata(ocr_metadata_str, translated_str):
-    """构建 render-direct 需要的 blocks + 译文"""
-    try:
-        blocks = json.loads(ocr_metadata_str)
-        trans_list = json.loads(translated_str)
-        if isinstance(trans_list, str):
-            trans_list = [trans_list]
-    except Exception as e:
-        _log(f'_build_render_metadata error: {e}')
-        return {"image_0": {"blocks": []}}
-    for j, b in enumerate(blocks):
-        if j < len(trans_list):
-            t = trans_list[j]
-            txt = t if isinstance(t, str) else (t.get("text", "") if isinstance(t, dict) else "")
-            b["text"] = txt
-    return {"image_0": {"blocks": blocks}}
-
-
 # 本地图片目录（上传时同步存到这里，OCR/修图优先本地读）
 _LOCAL_DOWNLOADS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                 'manga-image-translator', 'downloads')
@@ -175,47 +164,55 @@ def process_ocr_task(task):
                 "error": str(e)}
 
 
-def process_retouch_task(task):
-    """下载图片 → 本地修图 → 返回 base64"""
-    try:
-        img_bytes = _get_image_bytes(task['localPath'])
-    except Exception as e:
-        return {"imageId": task["imageId"], "outputImage": "", "error": f"获取图片失败: {e}"}
+def process_retouch_batch_aot(batch_tasks):
+    """批量 AOT 修图：下载 → 本地 AOT-GAN 擦除+渲染 → 返回 base64 结果列表"""
+    # 先下载所有图片
+    tasks_with_paths = []
+    for task in batch_tasks:
+        try:
+            img_bytes = _get_image_bytes(task['localPath'])
+        except Exception as e:
+            tasks_with_paths.append((task, None, str(e)))
+            continue
+        # 存临时文件供 AOT 读取
+        filename = os.path.basename(task["localPath"])
+        tmp_path = os.path.join(_LOCAL_DOWNLOADS, '_worker_tmp', filename)
+        try:
+            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+            with open(tmp_path, 'wb') as f:
+                f.write(img_bytes)
+            tasks_with_paths.append((task, tmp_path, None))
+        except Exception as e:
+            tasks_with_paths.append((task, None, str(e)))
 
-    filename = os.path.basename(task["localPath"])
-    files = [("images", (filename, img_bytes, "image/png"))]
-    # 用云端的 OCR blocks 坐标 + 译文
-    ocr_meta = task.get("ocrMetadata") or "[]"
-    translated = task.get("correctedTranslatedText") or task.get("translatedText") or "[]"
-    metadata_dict = _build_render_metadata(ocr_meta, translated)
-    # 与本地 AOT 修图保持一致参数
-    config = json.dumps({
-        "render": {
-            "font_scale_factor": 3.0,
-            "line_spacing_ratio": 1.3,
-            "text_padding_ratio": 1.0,
-            "font_size_offset": 15,
-            "font_size": 100
-        },
-        "text_merge": {"enabled": True},
-        "mask_expand_ratio": 0.05
-    })
-    try:
-        r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
-                          files=files,
-                          data={"config": config, "ocr_metadata": json.dumps(metadata_dict)},
-                          timeout=300)
-        if r.status_code != 200:
-            return {"imageId": task["imageId"], "outputImage": "",
-                    "error": f"修图服务 HTTP {r.status_code}"}
-        result_data = r.json().get("data", {})
-        results = result_data.get("results", [])
-        if not results or not results[0] or results[0].get("status") != "success":
-            return {"imageId": task["imageId"], "outputImage": "",
-                    "error": results[0].get("error", "修图失败") if results else "无结果"}
-        return {"imageId": task["imageId"], "outputImage": results[0].get("output_image", "")}
-    except Exception as e:
-        return {"imageId": task["imageId"], "outputImage": "", "error": str(e)}
+    # 准备传给 AOT 的数据
+    valid_tasks = [(t, p) for t, p, e in tasks_with_paths if p and not e]
+    failed_tasks = [(t, e) for t, p, e in tasks_with_paths if not p or e]
+
+    results = []
+    for task, err in failed_tasks:
+        results.append({"imageId": task["imageId"], "outputImage": "", "error": f"获取图片失败: {err}"})
+
+    if valid_tasks:
+        images_data = [t for t, _ in valid_tasks]
+        aot_results = process_images_aot(images_data, _LOCAL_DOWNLOADS)
+        for task, _ in valid_tasks:
+            img_id = task["imageId"]
+            output = aot_results.get(img_id, '')
+            if output:
+                results.append({"imageId": img_id, "outputImage": output})
+            else:
+                results.append({"imageId": img_id, "outputImage": "", "error": "AOT修图失败"})
+
+    # 清理临时文件
+    for _, tmp_path, _ in tasks_with_paths:
+        if tmp_path:
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+
+    return results
 
 
 def _handle_token_expired(data, parent):
@@ -323,10 +320,9 @@ def ocr_loop(parent):
 
 
 def retouch_loop(parent):
-    """修图轮询线程 — 2并发 + 批量提交"""
+    """修图轮询线程 — AOT批量修图"""
     global _running, _stats
-    RETOUCH_WORKERS = 2
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    RETOUCH_WORKERS = 2  # 每批处理张数
 
     while _running:
         has_task = False
@@ -345,46 +341,32 @@ def retouch_loop(parent):
                 parent.root.after(0, lambda tid=task_id, t=total:
                     parent._show_retouch_row(tid, t))
 
-                pool = ThreadPoolExecutor(max_workers=RETOUCH_WORKERS)
-                try:
-                    for i in range(0, len(pending), RETOUCH_WORKERS):
-                        batch = pending[i:i + RETOUCH_WORKERS]
+                for i in range(0, len(pending), RETOUCH_WORKERS):
+                    batch = pending[i:i + RETOUCH_WORKERS]
 
-                        # 并发修图
-                        futures = {pool.submit(process_retouch_task, img): img for img in batch}
-                        results = []
-                        for f in as_completed(futures):
-                            try:
-                                results.append(f.result())
-                            except Exception as e:
-                                img = futures[f]
-                                results.append({
-                                    "imageId": img["imageId"], "outputImage": "",
-                                    "error": str(e)
-                                })
+                    # 批量 AOT 修图
+                    results = process_retouch_batch_aot(batch)
 
-                        # 批量提交
-                        api_submit_batch(task_id, "retouch", results)
+                    # 批量提交
+                    api_submit_batch(task_id, "retouch", results)
 
-                        # 更新统计
-                        for r in results:
-                            err = r.get("error", "")
-                            if err:
-                                with _lock:
-                                    _stats["errors"] += 1
-                                    _error_log.insert(0, (time.strftime("%H:%M:%S"), r["imageId"], err))
-                                    if len(_error_log) > 50:
-                                        _error_log.pop()
-                            else:
-                                with _lock:
-                                    _stats["retouch"] += 1
+                    # 更新统计
+                    for r in results:
+                        err = r.get("error", "")
+                        if err:
+                            with _lock:
+                                _stats["errors"] += 1
+                                _error_log.insert(0, (time.strftime("%H:%M:%S"), r["imageId"], err))
+                                if len(_error_log) > 50:
+                                    _error_log.pop()
+                        else:
+                            with _lock:
+                                _stats["retouch"] += 1
 
-                        # 更新 GUI 进度
-                        done = processed + i + len(batch)
-                        parent.root.after(0, lambda p=done, t=total:
-                            parent._update_retouch_row(p, t))
-                finally:
-                    pool.shutdown()
+                    # 更新 GUI 进度
+                    done = processed + i + len(batch)
+                    parent.root.after(0, lambda p=done, t=total:
+                        parent._update_retouch_row(p, t))
 
             else:
                 parent.root.after(0, parent._hide_retouch_row)
