@@ -72,8 +72,15 @@ def do_login(username, password):
         }, timeout=15)
         data = r.json()
         if data.get("code") == 200:
-            _token = data.get("data", {}).get("tokens", {}).get("access_token", {}).get("token")
+            tokens = data.get("data", {}).get("tokens", {})
+            _token = tokens.get("access_token", {}).get("token")
+            _refresh = tokens.get("refresh_token", {}).get("token")
             _user_info = data.get("data", {})
+            if _token and _refresh:
+                try:
+                    with open(TOKEN_FILE, 'w') as tf:
+                        tf.write('{"a":"' + _token + '","r":"' + _refresh + '"}')
+                except: pass
             return True, ""
         return False, data.get("message", "登录失败")
     except Exception as e:
@@ -160,8 +167,16 @@ def process_ocr_task(task):
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": "OCR 无结果"}
         r0 = results[0]
+        ocr_text = r0.get("ocr_text", "")
+        # 归一化：翻译服务可能返回嵌套数组 [["..."]]，统一展平为 ["..."]
+        if isinstance(ocr_text, list):
+            if len(ocr_text) == 1 and isinstance(ocr_text[0], list):
+                ocr_text = ocr_text[0]  # [["a"]] → ["a"]
+            ocr_text = json.dumps(ocr_text, ensure_ascii=False)  # list → JSON string
+        elif not ocr_text:
+            ocr_text = ""
         return {"imageId": task["imageId"],
-                "ocrText": r0.get("ocr_text", ""),
+                "ocrText": ocr_text,
                 "ocrMetadata": json.dumps(r0.get("text_blocks", []))}
     except Exception as e:
         return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
@@ -453,6 +468,23 @@ class WorkerApp:
         ttk.Label(self.root, text="点击登录后在浏览器中完成认证", font=("", 9), foreground="gray").pack()
         # 读本地缓存 token
         threading.Thread(target=self._try_cached_token, daemon=True).start()
+
+    def _try_refresh_token():
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                import json as _j; saved = _j.loads(f.read())
+            rt = saved.get('r', '')
+            if not rt: return None
+            r = requests.post(f"{API_BASE}/auth/refresh", json={"refresh_token": rt}, timeout=15)
+            d = r.json()
+            if d.get("code") == 200:
+                at = d.get("data",{}).get("tokens",{}).get("access_token",{}).get("token")
+                new_rt = d.get("data",{}).get("tokens",{}).get("refresh_token",{}).get("token")
+                with open(TOKEN_FILE, 'w') as f:
+                    f.write('{"a":"' + at + '","r":"' + new_rt + '"}')
+                return at
+        except: pass
+        return None
 
     def _try_cached_token(self):
         global _token, _user_info
