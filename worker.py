@@ -623,7 +623,7 @@ class WorkerApp:
 
         self.ocr_row = ttk.Frame(self.task_card)
         ttk.Label(self.ocr_row, text="OCR", font=("", 10), width=6).pack(side="left")
-        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="--", foreground="gray", font=("", 9))
+        self.ocr_task_id_label = ttk.Label(self.ocr_row, text="--", foreground="gray", font=("", 9), width=22)
         self.ocr_task_id_label.pack(side="left", padx=5)
         self.ocr_progress_text = ttk.Label(self.ocr_row, text="--", width=8)
         self.ocr_progress_text.pack(side="right")
@@ -633,7 +633,7 @@ class WorkerApp:
 
         self.retouch_row = ttk.Frame(self.task_card)
         ttk.Label(self.retouch_row, text="修图", font=("", 10), width=6).pack(side="left")
-        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="--", foreground="gray", font=("", 9))
+        self.retouch_task_id_label = ttk.Label(self.retouch_row, text="--", foreground="gray", font=("", 9), width=22)
         self.retouch_task_id_label.pack(side="left", padx=5)
         self.retouch_progress_text = ttk.Label(self.retouch_row, text="--", width=8)
         self.retouch_progress_text.pack(side="right")
