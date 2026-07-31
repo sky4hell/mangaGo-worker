@@ -627,7 +627,7 @@ class WorkerApp:
         self.ocr_task_id_label.pack(side="left", padx=5)
         self.ocr_progress_text = ttk.Label(self.ocr_row, text="--", width=8)
         self.ocr_progress_text.pack(side="right")
-        self.ocr_progress_bar = ttk.Progressbar(self.ocr_row, mode="determinate", length=160)
+        self.ocr_progress_bar = ttk.Progressbar(self.ocr_row, mode="determinate", length=260)
         self.ocr_progress_bar.pack(side="right", padx=5)
         self.ocr_row.pack(fill="x", padx=5, pady=1)
 
