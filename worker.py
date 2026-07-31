@@ -637,7 +637,7 @@ class WorkerApp:
         self.retouch_task_id_label.pack(side="left", padx=5)
         self.retouch_progress_text = ttk.Label(self.retouch_row, text="--", width=8)
         self.retouch_progress_text.pack(side="right")
-        self.retouch_progress_bar = ttk.Progressbar(self.retouch_row, mode="determinate", length=160)
+        self.retouch_progress_bar = ttk.Progressbar(self.retouch_row, mode="determinate", length=260)
         self.retouch_progress_bar.pack(side="right", padx=5)
         self.retouch_row.pack(fill="x", padx=5, pady=1)
 
