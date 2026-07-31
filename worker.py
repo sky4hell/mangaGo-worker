@@ -167,16 +167,8 @@ def process_ocr_task(task):
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": "OCR 无结果"}
         r0 = results[0]
-        ocr_text = r0.get("ocr_text", "")
-        # 归一化：翻译服务可能返回嵌套数组 [["..."]]，统一展平为 ["..."]
-        if isinstance(ocr_text, list):
-            if len(ocr_text) == 1 and isinstance(ocr_text[0], list):
-                ocr_text = ocr_text[0]  # [["a"]] → ["a"]
-            ocr_text = json.dumps(ocr_text, ensure_ascii=False)  # list → JSON string
-        elif not ocr_text:
-            ocr_text = ""
         return {"imageId": task["imageId"],
-                "ocrText": ocr_text,
+                "ocrText": r0.get("ocr_text", ""),
                 "ocrMetadata": json.dumps(r0.get("text_blocks", []))}
     except Exception as e:
         return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
