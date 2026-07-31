@@ -9,6 +9,25 @@ import json
 import time
 import threading
 import base64 as b64
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import requests
+
+# ====== 日志（必须在其他 import 之前，否则 Flask/cozepy 会覆盖配置）======
+import logging
+_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worker.log')
+# 先清掉 root logger 已有的 handler
+for h in logging.root.handlers[:]:
+    logging.root.removeHandler(h)
+logging.basicConfig(
+    filename=_LOG_FILE,
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    filemode='a'
+)
+def _log(msg):
+    logging.info(msg)
+    print(msg)
 
 # comic-backend 路径，以便 import 本地 AOT 渲染模块
 _BACKEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'comic-backend')
@@ -16,20 +35,6 @@ if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
 from bulePrint.comicCrawlRetouchBp import call_local_retouch_aot_service, build_ocr_metadata, RETOUCH_CONFIG, build_retouch_config
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import requests
-
-# ====== 日志 ======
-import logging
-logging.basicConfig(
-    filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worker.log'),
-    level=logging.DEBUG,
-    format='%(asctime)s [%(levelname)s] %(message)s'
-)
-def _log(msg):
-    logging.info(msg)
-    print(msg)
 
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
