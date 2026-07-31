@@ -94,6 +94,24 @@ def do_login(username, password):
         return False, str(e)
 
 
+def _build_render_metadata(ocr_metadata_str, translated_str):
+    """构建 render-direct 需要的 blocks + 译文 (HTTP回退用)"""
+    try:
+        blocks = json.loads(ocr_metadata_str)
+        trans_list = json.loads(translated_str)
+        if isinstance(trans_list, str):
+            trans_list = [trans_list]
+    except Exception as e:
+        _log(f'_build_render_metadata error: {e}')
+        return {"image_0": {"blocks": []}}
+    for j, b in enumerate(blocks):
+        if j < len(trans_list):
+            t = trans_list[j]
+            txt = t if isinstance(t, str) else (t.get("text", "") if isinstance(t, dict) else "")
+            b["text"] = txt
+    return {"image_0": {"blocks": blocks}}
+
+
 # 本地图片目录（上传时同步存到这里，OCR/修图优先本地读）
 _LOCAL_DOWNLOADS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                 'manga-image-translator', 'downloads')
@@ -165,52 +183,84 @@ def process_ocr_task(task):
 
 
 def process_retouch_batch_aot(batch_tasks):
-    """批量 AOT 修图：下载 → 本地 AOT-GAN 擦除+渲染 → 返回 base64 结果列表"""
-    # 先下载所有图片
-    tasks_with_paths = []
-    for task in batch_tasks:
-        try:
-            img_bytes = _get_image_bytes(task['localPath'])
-        except Exception as e:
-            tasks_with_paths.append((task, None, str(e)))
-            continue
-        # 存临时文件供 AOT 读取
-        filename = os.path.basename(task["localPath"])
-        tmp_path = os.path.join(_LOCAL_DOWNLOADS, '_worker_tmp', filename)
-        try:
-            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
-            with open(tmp_path, 'wb') as f:
-                f.write(img_bytes)
-            tasks_with_paths.append((task, tmp_path, None))
-        except Exception as e:
-            tasks_with_paths.append((task, None, str(e)))
+    """批量修图：优先 AOT-GAN 本地管线，不可用时回退 HTTP render-direct"""
+    from retouch_aot import _HAS_TORCH
 
-    # 准备传给 AOT 的数据
-    valid_tasks = [(t, p) for t, p, e in tasks_with_paths if p and not e]
-    failed_tasks = [(t, e) for t, p, e in tasks_with_paths if not p or e]
+    if not _HAS_TORCH:
+        # 无 GPU，回退 HTTP
+        _log('retouch: AOT not available, fallback to HTTP render-direct')
+        results = []
+        for task in batch_tasks:
+            try:
+                img_bytes = _get_image_bytes(task['localPath'])
+            except Exception as e:
+                results.append({"imageId": task["imageId"], "outputImage": "", "error": f"获取图片失败: {e}"})
+                continue
+            filename = os.path.basename(task["localPath"])
+            files = [("images", (filename, img_bytes, "image/png"))]
+            ocr_meta = task.get("ocrMetadata") or "[]"
+            translated = task.get("correctedTranslatedText") or task.get("translatedText") or "[]"
+            metadata_dict = _build_render_metadata(ocr_meta, translated)
+            config = json.dumps({
+                "render": {
+                    "font_scale_factor": 3.0,
+                    "line_spacing_ratio": 1.3,
+                    "text_padding_ratio": 1.0,
+                    "font_size_offset": 15,
+                    "font_size": 100
+                },
+                "text_merge": {"enabled": True},
+                "mask_expand_ratio": 0.05
+            })
+            try:
+                r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/render-direct/batch",
+                                  files=files,
+                                  data={"config": config, "ocr_metadata": json.dumps(metadata_dict)},
+                                  timeout=300)
+                if r.status_code != 200:
+                    results.append({"imageId": task["imageId"], "outputImage": "", "error": f"修图服务 HTTP {r.status_code}"})
+                    continue
+                result_data = r.json().get("data", {})
+                ret = result_data.get("results", [])
+                if ret and ret[0] and ret[0].get("status") == "success":
+                    results.append({"imageId": task["imageId"], "outputImage": ret[0].get("output_image", "")})
+                else:
+                    results.append({"imageId": task["imageId"], "outputImage": "", "error": ret[0].get("error", "修图失败") if ret else "无结果"})
+            except Exception as e:
+                results.append({"imageId": task["imageId"], "outputImage": "", "error": str(e)})
+        return results
 
+    # AOT-GAN 本地管线
     results = []
-    for task, err in failed_tasks:
-        results.append({"imageId": task["imageId"], "outputImage": "", "error": f"获取图片失败: {err}"})
+    valid_images = []  # (task_dict, local_file_path)
 
-    if valid_tasks:
-        images_data = [t for t, _ in valid_tasks]
+    for task in batch_tasks:
+        local_path = task.get('localPath', '')
+        fp = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
+        if os.path.exists(fp):
+            valid_images.append((task, fp))
+        else:
+            _log(f'retouch download: {local_path[:50]}')
+            try:
+                img_bytes = _get_image_bytes(local_path)  # 下载并存到 _LOCAL_DOWNLOADS
+                fp2 = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
+                if os.path.exists(fp2):
+                    valid_images.append((task, fp2))
+                else:
+                    results.append({"imageId": task["imageId"], "outputImage": "", "error": "下载后仍找不到文件"})
+            except Exception as e:
+                results.append({"imageId": task["imageId"], "outputImage": "", "error": f"下载失败: {e}"})
+
+    if valid_images:
+        images_data = [t for t, _ in valid_images]
         aot_results = process_images_aot(images_data, _LOCAL_DOWNLOADS)
-        for task, _ in valid_tasks:
+        for task, _ in valid_images:
             img_id = task["imageId"]
             output = aot_results.get(img_id, '')
             if output:
                 results.append({"imageId": img_id, "outputImage": output})
             else:
                 results.append({"imageId": img_id, "outputImage": "", "error": "AOT修图失败"})
-
-    # 清理临时文件
-    for _, tmp_path, _ in tasks_with_paths:
-        if tmp_path:
-            try:
-                os.remove(tmp_path)
-            except Exception:
-                pass
 
     return results
 

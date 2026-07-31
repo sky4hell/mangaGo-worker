@@ -81,7 +81,9 @@ def build_ocr_metadata(images_batch, use_translation=False):
 
 
 def retouch_aot(image_paths, images_batch, retouch_config=None):
-    """AOT-GAN 擦除 + Pillow 渲染译文"""
+    """AOT-GAN 擦除 + Pillow 渲染译文。无 torch 则报错，由调用方回退 HTTP"""
+    if not _HAS_TORCH:
+        raise RuntimeError("torch 未安装，无法使用 AOT-GAN 修图")
     from utils.local_lama import create_mask_from_blocks, simple_inpaint_aot
     from PIL import Image, ImageDraw, ImageFont
     import cv2
