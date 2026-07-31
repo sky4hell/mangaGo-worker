@@ -262,7 +262,7 @@ def ocr_loop(parent):
             if _handle_token_expired(data, parent):
                 break
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
-            _log(f'poll ocr: code={data.get("code")} task={bool(task)} pending={len(task.get("pendingImages",[])) if task else 0}')
+            _log(f'poll ocr: code={data.get("code")} task={bool(task)} taskId={task.get("taskId","-") if task else "-"} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
                 has_task = True
                 pending = task.get("pendingImages", [])
@@ -338,7 +338,7 @@ def retouch_loop(parent):
             if _handle_token_expired(data, parent):
                 break
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
-            _log(f'poll retouch: code={data.get("code")} task={bool(task)} pending={len(task.get("pendingImages",[])) if task else 0}')
+            _log(f'poll retouch: code={data.get("code")} task={bool(task)} taskId={task.get("taskId","-") if task else "-"} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
                 has_task = True
                 pending = task.get("pendingImages", [])
