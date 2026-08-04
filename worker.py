@@ -3,6 +3,7 @@ mangaGo Worker — 桌面程序
 登录 → 轮询取任务 → 调用本地 AOT 修图管线 → 提交结果
 """
 import os
+import re
 import shutil
 import sys
 import json
@@ -124,7 +125,9 @@ _LOCAL_DOWNLOADS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 
 def _get_image_bytes(local_path):
-    """优先本地文件，没有则云端下载"""
+    """优先本地文件，没有则云端下载。
+    兼容章节目录命名差异：DB 可能存 '序章'，本地可能是 '章节1_序章'，
+    通过 strip '章节X_' 前缀来匹配。"""
     fp = None
     if _LOCAL_DOWNLOADS and local_path:
         fp = os.path.join(_LOCAL_DOWNLOADS, local_path.replace('\\', '/'))
@@ -132,8 +135,25 @@ def _get_image_bytes(local_path):
             _log(f'local_hit: {local_path[:50]}')
             with open(fp, 'rb') as fh:
                 return fh.read()
-        else:
-            _log(f'local_miss: {local_path[:50]}')
+        # exact match 失败 → 尝试 strip 章节X_ 前缀匹配
+        parent = os.path.dirname(fp)
+        fname = os.path.basename(fp)
+        if os.path.isdir(parent):
+            db_chapter = os.path.basename(parent)
+            for d in os.listdir(parent):
+                dpath = os.path.join(parent, d)
+                if not os.path.isdir(dpath):
+                    continue
+                stripped = re.sub(r'^章节\d+_', '', d)
+                if stripped == db_chapter:
+                    candidate = os.path.join(dpath, fname)
+                    if os.path.exists(candidate):
+                        _log(f'local_hit_fuzzy: {local_path[:50]} -> {d}/{fname}')
+                        with open(candidate, 'rb') as fh:
+                            return fh.read()
+                    break
+        _log(f'local_miss: {local_path[:50]}')
+
     r = _api_session.get(f"{API_BASE}/downloads/{local_path}", timeout=120)
     r.raise_for_status()
     # 下载后存本地，下次直接读盘
@@ -160,11 +180,11 @@ def process_ocr_task(task):
     config = json.dumps({
         "ocr": {"ocr": "48px_ctc", "min_text_length": 1},
         "translator": {"translator": "none"},
-        "text_merge": {"enabled": True},
+        "text_merge": {"enabled": True, "discard_connection_gap": 2.0},
         "remove_watermark": True,
         "inpainter": {"inpainter": "none"},
         "renderer": {"renderer": "none", "rtl": True},
-        "detector": {"detection_size": 2048, "text_threshold": 0.2, "box_threshold": 0.4}
+        "detector": {"detection_size": 2048, "text_threshold": 0.2, "box_threshold": 0.4, "det_invert": True}
     })
     try:
         r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
@@ -180,6 +200,9 @@ def process_ocr_task(task):
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": "OCR 无结果"}
         r0 = results[0]
+        if not r0 or not isinstance(r0, dict):
+            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
+                    "error": f"OCR结果异常: {type(r0).__name__}"}
         return {"imageId": task["imageId"],
                 "ocrText": r0.get("ocr_text", ""),
                 "ocrMetadata": json.dumps(r0.get("text_blocks", []))}
