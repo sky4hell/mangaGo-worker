@@ -176,15 +176,22 @@ def process_ocr_task(task):
                 "error": f"获取图片失败: {e}"}
 
     filename = os.path.basename(task["localPath"])
-    files = [("images", (filename, img_bytes, "image/png"))]
+    ext = os.path.splitext(filename)[1].lower()
+    _mime_map = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+                 '.webp': 'image/webp', '.bmp': 'image/bmp', '.gif': 'image/gif'}
+    content_type = _mime_map.get(ext, 'image/png')
+    files = [("images", (filename, img_bytes, content_type))]
+    detect_size = task.get('detectSize', 2048)
+    merge_gap = task.get('mergeGap')
+    text_merge = {"enabled": True, "discard_connection_gap": merge_gap if merge_gap is not None else 2.0}
     config = json.dumps({
         "ocr": {"ocr": "48px_ctc", "min_text_length": 1},
         "translator": {"translator": "none"},
-        "text_merge": {"enabled": True, "discard_connection_gap": 2.0},
+        "text_merge": text_merge,
         "remove_watermark": True,
         "inpainter": {"inpainter": "none"},
         "renderer": {"renderer": "none", "rtl": True},
-        "detector": {"detection_size": 2048, "text_threshold": 0.2, "box_threshold": 0.4, "det_invert": True}
+        "detector": {"detection_size": detect_size, "text_threshold": 0.2, "box_threshold": 0.4, "det_invert": True}
     })
     try:
         r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
@@ -292,11 +299,15 @@ def ocr_loop(parent):
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
             _log(f'poll ocr: code={data.get("code")} task={bool(task)} taskId={task.get("taskId","-") if task else "-"} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
-                has_task = True
+                task_id = task.get("taskId")
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                processed = task.get("completedCount", 0) + task.get("failedCount", 0)
-                task_id = task["taskId"]
+                if total == 0:
+                    # 空任务直接标记完成，避免死循环阻塞其他任务
+                    api_submit_batch(task_id, "ocr", [])
+                    has_task = True
+                    continue
+                has_task = True
                 parent.root.after(0, lambda tid=task_id, t=total:
                     parent._show_ocr_row(tid, t))
 
@@ -335,7 +346,7 @@ def ocr_loop(parent):
                                     _stats["ocr"] += 1
 
                         # 更新 GUI 进度
-                        done = processed + i + len(batch)
+                        done = task.get("completedCount", 0) + task.get("failedCount", 0) + i + len(batch)
                         parent.root.after(0, lambda p=done, t=total:
                             parent._update_ocr_row(p, t))
                 finally:
@@ -352,6 +363,8 @@ def ocr_loop(parent):
 
         if not has_task:
             time.sleep(POLL_INTERVAL)
+        else:
+            time.sleep(1)  # 任务完成后短暂冷却，避免高频轮询
 
 
 def retouch_loop(parent):
@@ -368,11 +381,15 @@ def retouch_loop(parent):
             task = (data.get("data", {}) or {}).get("task") if data.get("code") == 200 else None
             _log(f'poll retouch: code={data.get("code")} task={bool(task)} taskId={task.get("taskId","-") if task else "-"} pending={len(task.get("pendingImages",[])) if task else 0}')
             if task:
-                has_task = True
+                task_id = task.get("taskId")
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                processed = task.get("completedCount", 0) + task.get("failedCount", 0)
-                task_id = task["taskId"]
+                if total == 0:
+                    # 空任务直接标记完成，避免死循环阻塞其他任务
+                    api_submit_batch(task_id, "retouch", [])
+                    has_task = True
+                    continue
+                has_task = True
                 parent.root.after(0, lambda tid=task_id, t=total:
                     parent._show_retouch_row(tid, t))
 
@@ -393,7 +410,7 @@ def retouch_loop(parent):
                             with _lock:
                                 _stats["retouch"] += 1
 
-                    done = processed + i + len(batch)
+                    done = task.get("completedCount", 0) + task.get("failedCount", 0) + i + len(batch)
                     parent.root.after(0, lambda p=done, t=total:
                         parent._update_retouch_row(p, t))
 
@@ -408,6 +425,8 @@ def retouch_loop(parent):
 
         if not has_task:
             time.sleep(POLL_INTERVAL)
+        else:
+            time.sleep(1)  # 任务完成后短暂冷却，避免高频轮询
 
 
 # ====== GUI ======
@@ -483,32 +502,52 @@ class WorkerApp:
         # 读本地缓存 token
         threading.Thread(target=self._try_cached_token, daemon=True).start()
 
-    def _try_refresh_token():
+    def _try_refresh_token(self, refresh_token):
+        """用 refresh_token 换新 access_token，成功返回新 token，失败返回 None"""
         try:
-            with open(TOKEN_FILE, 'r') as f:
-                import json as _j; saved = _j.loads(f.read())
-            rt = saved.get('r', '')
-            if not rt: return None
-            r = requests.post(f"{API_BASE}/auth/refresh", json={"refresh_token": rt}, timeout=15)
+            r = requests.post(f"{API_BASE}/auth/refresh", json={"refresh_token": refresh_token}, timeout=15)
             d = r.json()
             if d.get("code") == 200:
                 at = d.get("data",{}).get("tokens",{}).get("access_token",{}).get("token")
                 new_rt = d.get("data",{}).get("tokens",{}).get("refresh_token",{}).get("token")
-                with open(TOKEN_FILE, 'w') as f:
-                    f.write('{"a":"' + at + '","r":"' + new_rt + '"}')
-                return at
-        except: pass
+                if at:
+                    with open(TOKEN_FILE, 'w') as f:
+                        f.write(json.dumps({"a": at, "r": new_rt}))
+                    return at
+        except Exception as e:
+            _log(f'refresh_token: {e}')
         return None
 
     def _try_cached_token(self):
         global _token, _user_info
         try:
             with open(TOKEN_FILE, 'r') as f:
-                tk = f.read().strip()
+                raw = f.read().strip()
+            if not raw:
+                raise ValueError('empty token file')
+            # 兼容两种格式：JSON {"a":"...", "r":"..."} 或 原始 JWT 字符串
+            tk = raw
+            rt = None
+            if raw.startswith('{'):
+                try:
+                    saved = json.loads(raw)
+                    tk = saved.get('a', '')
+                    rt = saved.get('r', '')
+                except Exception:
+                    pass
             if tk:
                 r = requests.get(f"{API_BASE}/worker/poll", params={"type": "ocr"},
                     headers={"Authorization": f"Bearer {tk}"}, timeout=10)
                 data = r.json()
+                if data.get('code') == 401 and rt:
+                    # access token 过期，尝试 refresh
+                    _log('cached_token: access expired, trying refresh')
+                    new_at = self._try_refresh_token(rt)
+                    if new_at:
+                        tk = new_at
+                        r = requests.get(f"{API_BASE}/worker/poll", params={"type": "ocr"},
+                            headers={"Authorization": f"Bearer {tk}"}, timeout=10)
+                        data = r.json()
                 if data.get('code') != 401:
                     _token = tk
                     self.root.after(0, self._setup_main)
@@ -675,14 +714,25 @@ class WorkerApp:
 
         threading.Thread(target=self._auto_start, daemon=True).start()
 
+    _translator_process = None
+
     def _start_translator(self):
         import subprocess
+        # kill 旧进程避免僵尸堆积
+        if self._translator_process:
+            try:
+                self._translator_process.kill()
+            except Exception:
+                pass
         venv_pyw = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                 'manga-image-translator', 'venv', 'Scripts', 'pythonw.exe')
+        # stderr 写入日志文件，方便排查启动失败
+        translator_err = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'translator_stderr.log'), 'a')
         env = os.environ.copy()
         env['PYTHONW_SUPPRESS_STDERR'] = '1'
-        p = subprocess.Popen([venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+        self._translator_process = subprocess.Popen(
+            [venv_pyw, TRANSLATOR_SCRIPT, '--port', '8001', '--use-gpu', '--models-ttl=3600'],
+            stdout=translator_err, stderr=translator_err, env=env)
 
     def _update_translator_status(self, text, color="#409eff"):
         self.root.after(0, lambda: self.service_bar.config(text=text, bg=color))
@@ -730,8 +780,21 @@ class WorkerApp:
                 _log(f"watchdog: translator down ({e}), restarting...")
                 self._update_translator_status("本地服务异常，重启中...", "#e6a23c")
                 self._start_translator()
-                time.sleep(10)
-                self._update_translator_status("本地服务已就绪", "#67c23a")
+                # 等重启后验证
+                restarted = False
+                for i in range(10):
+                    time.sleep(2)
+                    try:
+                        urllib.request.urlopen("http://localhost:8001/docs", timeout=3)
+                        _log(f"watchdog: translator restarted after {i*2}s")
+                        self._update_translator_status("本地服务已就绪", "#67c23a")
+                        restarted = True
+                        break
+                    except Exception:
+                        pass
+                if not restarted:
+                    _log("watchdog: translator failed to restart")
+                    self._update_translator_status("本地服务重启失败", "#f56c6c")
 
     def update_status(self, msg):
         self.root.after(0, lambda: self.top_status.config(text=msg + "  "))
