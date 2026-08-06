@@ -2,3 +2,4 @@ dist/
 worker.log
 token.txt
 __pycache__/
+translator_stderr.log

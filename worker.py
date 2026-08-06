@@ -2,6 +2,7 @@
 mangaGo Worker — 桌面程序
 登录 → 轮询取任务 → 调用本地 AOT 修图管线 → 提交结果
 """
+import copy
 import os
 import re
 import shutil
@@ -36,6 +37,7 @@ if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
 from bulePrint.comicCrawlRetouchBp import call_local_retouch_aot_service, build_ocr_metadata, RETOUCH_CONFIG, build_retouch_config
+from config import OCR_CONFIG
 
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
@@ -183,16 +185,13 @@ def process_ocr_task(task):
     files = [("images", (filename, img_bytes, content_type))]
     detect_size = task.get('detectSize', 2048)
     merge_gap = task.get('mergeGap')
-    text_merge = {"enabled": True, "discard_connection_gap": merge_gap if merge_gap is not None else 2.0}
-    config = json.dumps({
-        "ocr": {"ocr": "48px_ctc", "min_text_length": 1},
-        "translator": {"translator": "none"},
-        "text_merge": text_merge,
-        "remove_watermark": True,
-        "inpainter": {"inpainter": "none"},
-        "renderer": {"renderer": "none", "rtl": True},
-        "detector": {"detection_size": detect_size, "text_threshold": 0.2, "box_threshold": 0.4, "det_invert": True}
-    })
+    # 以 OCR_CONFIG 为基础，只覆盖 task 级别的参数
+    ocr_cfg = copy.deepcopy(OCR_CONFIG)
+    ocr_cfg['detector']['detection_size'] = detect_size
+    if merge_gap is not None:
+        ocr_cfg['text_merge']['discard_connection_gap'] = merge_gap
+    ocr_cfg['remove_watermark'] = True
+    config = json.dumps(ocr_cfg)
     try:
         r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
                           files=files,
