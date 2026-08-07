@@ -307,7 +307,7 @@ def ocr_loop(parent):
                 if total == 0 or len(pending) == 0:
                     # 空任务或全部已处理，提交空批次触发服务端标记完成
                     api_submit_batch(task_id, "ocr", [])
-                    has_task = True
+                    time.sleep(2)
                     continue
                 has_task = True
                 parent.root.after(0, lambda tid=task_id, t=total:
@@ -389,7 +389,7 @@ def retouch_loop(parent):
                 if total == 0 or len(pending) == 0:
                     # 空任务或全部已处理，提交空批次触发服务端标记完成
                     api_submit_batch(task_id, "retouch", [])
-                    has_task = True
+                    time.sleep(2)
                     continue
                 has_task = True
                 parent.root.after(0, lambda tid=task_id, t=total:
