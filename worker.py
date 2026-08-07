@@ -304,8 +304,8 @@ def ocr_loop(parent):
                 task_id = task.get("taskId")
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                if total == 0:
-                    # 空任务直接标记完成，避免死循环阻塞其他任务
+                if total == 0 or len(pending) == 0:
+                    # 空任务或全部已处理，提交空批次触发服务端标记完成
                     api_submit_batch(task_id, "ocr", [])
                     has_task = True
                     continue
@@ -386,8 +386,8 @@ def retouch_loop(parent):
                 task_id = task.get("taskId")
                 pending = task.get("pendingImages", [])
                 total = task.get("totalImages", 0)
-                if total == 0:
-                    # 空任务直接标记完成，避免死循环阻塞其他任务
+                if total == 0 or len(pending) == 0:
+                    # 空任务或全部已处理，提交空批次触发服务端标记完成
                     api_submit_batch(task_id, "retouch", [])
                     has_task = True
                     continue
