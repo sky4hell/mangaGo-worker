@@ -200,7 +200,10 @@ def process_ocr_task(task):
         if r.status_code != 200:
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": f"OCR服务 HTTP {r.status_code}"}
-        ocr_data = r.json().get("data", {})
+        ocr_data = r.json().get("data")
+        if not ocr_data or not isinstance(ocr_data, dict):
+            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
+                    "error": f"OCR服务返回异常: data={type(ocr_data).__name__}"}
         results = ocr_data.get("results", [])
         if not results:
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
