@@ -183,7 +183,7 @@ def process_ocr_task(task):
                  '.webp': 'image/webp', '.bmp': 'image/bmp', '.gif': 'image/gif'}
     content_type = _mime_map.get(ext, 'image/png')
     files = [("images", (filename, img_bytes, content_type))]
-    detect_size = task.get('detectSize', 2048)
+    detect_size = task.get('detectSize', 4096)
     merge_gap = task.get('mergeGap')
     # 以 OCR_CONFIG 为基础，只覆盖 task 级别的参数
     ocr_cfg = copy.deepcopy(OCR_CONFIG)
@@ -200,7 +200,8 @@ def process_ocr_task(task):
         if r.status_code != 200:
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": f"OCR服务 HTTP {r.status_code}"}
-        ocr_data = r.json().get("data")
+        resp_json = r.json()
+        ocr_data = resp_json.get("data") if isinstance(resp_json, dict) else None
         if not ocr_data or not isinstance(ocr_data, dict):
             return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                     "error": f"OCR服务返回异常: data={type(ocr_data).__name__}"}
