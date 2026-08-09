@@ -41,6 +41,7 @@ from config import OCR_CONFIG
 
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
+WORKER_API_BASE = os.environ.get("WORKER_API", "http://localhost:5001/api")
 LOCAL_TRANSLATOR = "http://localhost:8001"
 TRANSLATOR_SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                   'manga-image-translator', 'server', 'main.py')
@@ -61,7 +62,7 @@ _local_session.trust_env = False
 
 def api_post(path, data=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
-    r = _api_session.post(f"{API_BASE}{path}", json=data, headers=headers, timeout=30)
+    r = _api_session.post(f"{WORKER_API_BASE}{path}", json=data, headers=headers, timeout=30)
     try:
         return r.json()
     except Exception as e:
@@ -72,7 +73,7 @@ def api_post(path, data=None):
 def api_get(path, params=None):
     headers = {"Authorization": f"Bearer {_token}"} if _token else {}
     _log(f'api_get {path} token_len={len(_token) if _token else 0}')
-    r = _api_session.get(f"{API_BASE}{path}", params=params, headers=headers, timeout=30)
+    r = _api_session.get(f"{WORKER_API_BASE}{path}", params=params, headers=headers, timeout=30)
     try:
         return r.json()
     except Exception as e:
@@ -539,7 +540,7 @@ class WorkerApp:
                 except Exception:
                     pass
             if tk:
-                r = requests.get(f"{API_BASE}/worker/poll", params={"type": "ocr"},
+                r = requests.get(f"{WORKER_API_BASE}/worker/poll", params={"type": "ocr"},
                     headers={"Authorization": f"Bearer {tk}"}, timeout=10)
                 data = r.json()
                 if data.get('code') == 401 and rt:
@@ -548,7 +549,7 @@ class WorkerApp:
                     new_at = self._try_refresh_token(rt)
                     if new_at:
                         tk = new_at
-                        r = requests.get(f"{API_BASE}/worker/poll", params={"type": "ocr"},
+                        r = requests.get(f"{WORKER_API_BASE}/worker/poll", params={"type": "ocr"},
                             headers={"Authorization": f"Bearer {tk}"}, timeout=10)
                         data = r.json()
                 if data.get('code') != 401:
@@ -574,7 +575,7 @@ class WorkerApp:
             for i in range(120):
                 time.sleep(2)
                 try:
-                    r = requests.get(f"{API_BASE}/worker/token",
+                    r = requests.get(f"{WORKER_API_BASE}/worker/token",
                         params={"id": worker_id},
                         headers={'User-Agent': 'mangaGo-Worker/1.0'},
                         timeout=10)
