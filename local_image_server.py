@@ -73,7 +73,15 @@ def serve_image(relative_path):
             params = {'thumb': thumb} if thumb else {}
             resp = requests.get(remote_url, timeout=30, params=params)
             if resp.status_code == 200:
-                print(f'[proxy] {relative_path} ({len(resp.content)} bytes)')
+                # 原图存本地，下次直接命中
+                if not thumb:
+                    save_path = os.path.join(IMAGE_ROOT, relative_path)
+                    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                    with open(save_path, 'wb') as f:
+                        f.write(resp.content)
+                    print(f'[proxy+save] {relative_path} ({len(resp.content)} bytes)')
+                else:
+                    print(f'[proxy] {relative_path} ({len(resp.content)} bytes)')
                 return send_file(BytesIO(resp.content), mimetype='image/webp')
         except Exception as e:
             print(f'[proxy error] {relative_path}: {e}')
