@@ -1,6 +1,6 @@
 """
 本地图片服务 — 优先本地、零延迟加载
-监听 localhost:5001，从 comic-backend/downloads/ 读取图片
+监听 localhost:7003，从 comic-backend/downloads/ 读取图片
 """
 import os
 import re
@@ -113,9 +113,9 @@ def serve_image(relative_path):
 
 if __name__ == '__main__':
     print(f'[图片服务] 根目录: {IMAGE_ROOT}')
-    print(f'[图片服务] 启动在 http://localhost:5001')
+    print(f'[图片服务] 启动在 http://localhost:7003')
     print(f'[图片服务] 访问 /log 查看请求日志，/health 探活')
     import logging
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.WARNING)
-    app.run(host='127.0.0.1', port=5001, debug=False)
+    app.run(host='127.0.0.1', port=7003, debug=False)
