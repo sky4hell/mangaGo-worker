@@ -14,6 +14,17 @@ import base64 as b64
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import requests
+import subprocess
+import ctypes
+from PIL import Image, ImageTk
+import pystray
+
+# pythonw 无控制台时 sys.stdout/stderr 为 None，comic-backend 的 log_utils 会调用 sys.stderr.fileno() 崩溃
+# 兜底：指向 devnull，让 logger 有地方写而不崩
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w', encoding='utf-8')
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w', encoding='utf-8')
 
 # ====== 日志（必须在其他 import 之前，否则 Flask/cozepy 会覆盖配置）======
 import logging
@@ -171,7 +182,7 @@ def _get_image_bytes(local_path):
 
 
 def process_ocr_task(task):
-    """本地图片优先 → OCR → 返回结果"""
+    """本地图片优先 → OCR → 返回结果。合并按钮路径(dualOcr)跑两次OCR取字多/框多的结果"""
     try:
         img_bytes = _get_image_bytes(task['localPath'])
     except Exception as e:
@@ -186,37 +197,58 @@ def process_ocr_task(task):
     files = [("images", (filename, img_bytes, content_type))]
     detect_size = task.get('detectSize', 4096)
     merge_gap = task.get('mergeGap')
-    # 以 OCR_CONFIG 为基础，只覆盖 task 级别的参数
-    ocr_cfg = copy.deepcopy(OCR_CONFIG)
-    ocr_cfg['detector']['detection_size'] = detect_size
-    if merge_gap is not None:
-        ocr_cfg['text_merge']['discard_connection_gap'] = merge_gap
-    ocr_cfg['remove_watermark'] = True
-    config = json.dumps(ocr_cfg)
-    try:
+    dual_ocr = bool(task.get('dualOcr'))
+
+    def _build_cfg(invert):
+        # 以 OCR_CONFIG 为基础，只覆盖 task 级别参数 + det_invert 极性
+        ocr_cfg = copy.deepcopy(OCR_CONFIG)
+        ocr_cfg['detector']['detection_size'] = detect_size
+        if merge_gap is not None:
+            ocr_cfg['text_merge']['discard_connection_gap'] = merge_gap
+        ocr_cfg['remove_watermark'] = True
+        ocr_cfg['detector']['det_invert'] = invert
+        return ocr_cfg
+
+    def _run_once(invert):
+        config = json.dumps(_build_cfg(invert))
         r = _local_session.post(f"{LOCAL_TRANSLATOR}/review/ocr/with-form/batch/json",
                           files=files,
                           data={"config": config, "save_to_db": "false"},
                           timeout=300)
         if r.status_code != 200:
-            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
-                    "error": f"OCR服务 HTTP {r.status_code}"}
+            raise RuntimeError(f"OCR服务 HTTP {r.status_code}")
         resp_json = r.json()
         ocr_data = resp_json.get("data") if isinstance(resp_json, dict) else None
         if not ocr_data or not isinstance(ocr_data, dict):
-            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
-                    "error": f"OCR服务返回异常: data={type(ocr_data).__name__}"}
+            raise RuntimeError(f"OCR服务返回异常: data={type(ocr_data).__name__}")
         results = ocr_data.get("results", [])
         if not results:
-            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
-                    "error": "OCR 无结果"}
+            raise RuntimeError("OCR 无结果")
         r0 = results[0]
         if not r0 or not isinstance(r0, dict):
-            return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
-                    "error": f"OCR结果异常: {type(r0).__name__}"}
+            raise RuntimeError(f"OCR结果异常: {type(r0).__name__}")
+        blocks = r0.get("text_blocks", []) or []
+        text = r0.get("ocr_text", "") or ""
+        return text, blocks
+
+    try:
+        if dual_ocr:
+            candidates = []
+            for invert in (True, False):
+                try:
+                    candidates.append(_run_once(invert))
+                except Exception as e:
+                    _log(f'dual_ocr pass det_invert={invert} failed: {e}')
+            if not candidates:
+                return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
+                        "error": "两次OCR均失败"}
+            # 取字多、文本框多的那个结果
+            text, blocks = max(candidates, key=lambda x: (len(x[0]), len(x[1])))
+        else:
+            text, blocks = _run_once(True)
         return {"imageId": task["imageId"],
-                "ocrText": r0.get("ocr_text", ""),
-                "ocrMetadata": json.dumps(r0.get("text_blocks", []))}
+                "ocrText": text,
+                "ocrMetadata": json.dumps(blocks)}
     except Exception as e:
         return {"imageId": task["imageId"], "ocrText": "", "ocrMetadata": None,
                 "error": str(e)}
@@ -438,12 +470,118 @@ class WorkerApp:
     def __init__(self):
         self.error_text = None
         self.import_status = None
+        self.tray_icon = None
+        # 设置 AppUserModelID：否则 pythonw 启动时任务栏按钮会套用 pythonw.exe 图标，而不是窗口图标
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('mangaGo.Worker.1')
+        except Exception as e:
+            _log(f'设置 AppUserModelID 失败: {e}')
         self.root = tk.Tk()
         self.root.title("mangaGo Worker")
         self.root.geometry("420x200")
         self.root.resizable(False, False)
+        self._set_icon()
+        self._setup_tray()
         self._setup_login()
+        # 点 X → 最小化到托盘，不退出
+        self.root.protocol("WM_DELETE_WINDOW", self._hide_to_tray)
         self.root.mainloop()
+        # 真正退出（托盘菜单"退出"）→ 联动关闭翻译(8001)和图片(7003)服务
+        self._stop_tray()
+        self._kill_sibling_services()
+
+    def _set_icon(self):
+        """设置窗口图标（任务栏/左上角）"""
+        base = os.path.dirname(os.path.abspath(__file__))
+        ico_path = os.path.join(base, 'mangaGo.ico')
+        icon_path = os.path.join(base, 'mangaGo.png')
+        # 任务栏按钮图标：Windows 需要 .ico + iconbitmap
+        if os.path.isfile(ico_path):
+            try:
+                self.root.iconbitmap(ico_path)
+            except Exception as e:
+                _log(f'设置窗口图标(ico)失败: {e}')
+        # 左上角标题栏图标：iconphoto（PNG，更清晰）
+        if os.path.isfile(icon_path):
+            try:
+                img = Image.open(icon_path)
+                self._icon = ImageTk.PhotoImage(img)   # 存到 self，防止被 GC 回收图标消失
+                self.root.iconphoto(True, self._icon)
+            except Exception as e:
+                _log(f'设置窗口图标(png)失败: {e}')
+
+    def _hide_to_tray(self):
+        """点窗口 X → 隐藏到托盘；托盘不可用时保持关闭"""
+        if self.tray_icon is None:
+            self._do_quit()
+            return
+        self.root.withdraw()
+
+    def _restore_window(self):
+        self.root.deiconify()
+        self.root.lift()
+
+    def _show_window(self, icon=None, item=None):
+        self.root.after(0, self._restore_window)
+
+    def _do_quit(self):
+        self.root.quit()
+
+    def _quit(self, icon=None, item=None):
+        """托盘菜单'退出' → 结束 mainloop，触发联动关闭"""
+        self.root.after(0, self._do_quit)
+
+    def _setup_tray(self):
+        """创建系统托盘图标（右键：显示窗口 / 退出）"""
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mangaGo.png')
+        if not os.path.isfile(icon_path):
+            _log('托盘图标文件不存在，跳过托盘: ' + icon_path)
+            return
+        try:
+            img = Image.open(icon_path)
+            menu = pystray.Menu(
+                pystray.MenuItem('显示窗口', self._show_window),
+                pystray.MenuItem('退出', self._quit),
+            )
+            self.tray_icon = pystray.Icon('mangaGo', img, 'mangaGo Worker', menu)
+            self.tray_icon.run_detached()
+        except Exception as e:
+            _log(f'托盘创建失败: {e}')
+            self.tray_icon = None
+
+    def _stop_tray(self):
+        if self.tray_icon:
+            try:
+                self.tray_icon.stop()
+            except Exception as e:
+                _log(f'托盘停止失败: {e}')
+
+    def _kill_sibling_services(self):
+        """关闭翻译服务(8001)和图片服务(7003)，避免下次启动端口冲突"""
+        for port in (8001, 7003):
+            try:
+                out = subprocess.run(
+                    ['netstat', '-ano'],
+                    capture_output=True, text=True, timeout=10,
+                ).stdout
+            except Exception as e:
+                _log(f'kill_sibling netstat 失败 (port {port}): {e}')
+                continue
+            for line in out.splitlines():
+                if f':{port} ' not in line or 'LISTENING' not in line:
+                    continue
+                parts = line.split()
+                if not parts:
+                    continue
+                pid = parts[-1]
+                try:
+                    subprocess.run(
+                        ['taskkill', '/F', '/T', '/PID', pid],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    _log(f'已联动关闭服务 :{port} (PID {pid})')
+                except Exception as e:
+                    _log(f'kill_sibling taskkill 失败 (port {port}, pid {pid}): {e}')
 
     def _import_images(self):
         folder = filedialog.askdirectory(title="选择漫画文件夹（包含章节子目录）")

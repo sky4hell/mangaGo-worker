@@ -3,3 +3,4 @@ worker.log
 token.txt
 __pycache__/
 translator_stderr.log
+image_server.log
