@@ -148,7 +148,18 @@ def _get_image_bytes(local_path):
         if os.path.exists(fp):
             _log(f'local_hit: {local_path[:50]}')
             with open(fp, 'rb') as fh:
-                return fh.read()
+                data = fh.read()
+            # 读时自愈：文件头被 \r\n(0x0D0A) 前缀污染 → 剥离并回写修复
+            if data[:2] == b'\r\n':
+                fixed = data[2:]
+                try:
+                    with open(fp, 'wb') as fh:
+                        fh.write(fixed)
+                    _log(f'fix_crlf_corruption: {local_path[:50]}')
+                except Exception as e:
+                    _log(f'fix_crlf_corruption_error: {e}')
+                return fixed
+            return data
         # exact match 失败 → 尝试 strip 章节X_ 前缀匹配
         parent = os.path.dirname(fp)
         fname = os.path.basename(fp)
