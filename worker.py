@@ -536,7 +536,7 @@ class WorkerApp:
         self.root.after(0, self._restore_window)
 
     def _do_quit(self):
-        self.root.quit()
+        self.root.destroy()
 
     def _quit(self, icon=None, item=None):
         """托盘菜单'退出' → 结束 mainloop，触发联动关闭"""
@@ -551,7 +551,7 @@ class WorkerApp:
         try:
             img = Image.open(icon_path)
             menu = pystray.Menu(
-                pystray.MenuItem('显示窗口', self._show_window),
+                pystray.MenuItem('显示窗口', self._show_window, default=True, visible=False),
                 pystray.MenuItem('退出', self._quit),
             )
             self.tray_icon = pystray.Icon('mangaGo', img, 'mangaGo Worker', menu)
