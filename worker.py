@@ -47,7 +47,7 @@ _BACKEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
-from bulePrint.comicCrawlRetouchBp import call_local_retouch_aot_service, build_ocr_metadata, RETOUCH_CONFIG, build_retouch_config
+from local_retouch import call_local_retouch_aot_service, build_ocr_metadata, RETOUCH_CONFIG, build_retouch_config
 from config import OCR_CONFIG
 
 # ====== 配置 ======
