@@ -206,16 +206,31 @@ def process_ocr_task(task):
                  '.webp': 'image/webp', '.bmp': 'image/bmp', '.gif': 'image/gif'}
     content_type = _mime_map.get(ext, 'image/png')
     files = [("images", (filename, img_bytes, content_type))]
-    detect_size = task.get('detectSize', 4096)
+    detect_size = task.get('detectSize') or 3072
     merge_gap = task.get('mergeGap')
     dual_ocr = bool(task.get('dualOcr'))
+    ocr_model = task.get('ocrModel')
+    text_threshold = task.get('textThreshold')
+    box_threshold = task.get('boxThreshold')
+    char_gap_tol = task.get('charGapTolerance')
+    char_gap_tol2 = task.get('charGapTolerance2')
 
     def _build_cfg(invert):
         # 以 OCR_CONFIG 为基础，只覆盖 task 级别参数 + det_invert 极性
         ocr_cfg = copy.deepcopy(OCR_CONFIG)
         ocr_cfg['detector']['detection_size'] = detect_size
+        if ocr_model:
+            ocr_cfg['ocr']['ocr'] = ocr_model
         if merge_gap is not None:
             ocr_cfg['text_merge']['discard_connection_gap'] = merge_gap
+        if text_threshold is not None:
+            ocr_cfg['detector']['text_threshold'] = text_threshold
+        if box_threshold is not None:
+            ocr_cfg['detector']['box_threshold'] = box_threshold
+        if char_gap_tol is not None:
+            ocr_cfg['text_merge']['char_gap_tolerance'] = char_gap_tol
+        if char_gap_tol2 is not None:
+            ocr_cfg['text_merge']['char_gap_tolerance2'] = char_gap_tol2
         ocr_cfg['remove_watermark'] = True
         ocr_cfg['detector']['det_invert'] = invert
         return ocr_cfg
