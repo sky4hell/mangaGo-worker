@@ -48,7 +48,7 @@ if _BACKEND_DIR not in sys.path:
     sys.path.insert(0, _BACKEND_DIR)
 
 from local_retouch import call_local_retouch_aot_service, build_ocr_metadata, RETOUCH_CONFIG, build_retouch_config
-from config import OCR_CONFIG
+from config import OCR_CONFIG, DEFAULT_DETECT_SIZE
 
 # ====== 配置 ======
 API_BASE = os.environ.get("MANGA_API", "https://zalomanga.com/api")
@@ -206,7 +206,7 @@ def process_ocr_task(task):
                  '.webp': 'image/webp', '.bmp': 'image/bmp', '.gif': 'image/gif'}
     content_type = _mime_map.get(ext, 'image/png')
     files = [("images", (filename, img_bytes, content_type))]
-    detect_size = task.get('detectSize') or 3072
+    detect_size = task.get('detectSize') or DEFAULT_DETECT_SIZE
     merge_gap = task.get('mergeGap')
     dual_ocr = bool(task.get('dualOcr'))
     ocr_model = task.get('ocrModel')
